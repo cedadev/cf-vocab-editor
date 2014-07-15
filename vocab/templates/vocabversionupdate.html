@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+
+{% block title %}Update for {{vocab}} Version:{{vocabversion.version}}{% endblock %}
+
+{% block main %}
+
+ {% for p in proposals %}
+   <div class="row">       	
+   		<div class="span8"><h3>{{p.current_term.name}}</h3></div>
+   		<div class="span2">Unit: {{p.current_term.unit}}</div>
+   </div>
+   <div class="row">       	
+   		{%if p.current_term.unit_ref %}<div class="span2">Unit ref: {{p.current_term.unit_ref}}</div>{% endif %}
+   		{%if p.current_term.amip %}<div class="span2">AMIP: {{p.current_term.amip}}</div>{% endif %}
+   		{%if p.current_term.grib %}<div class="span2">GRIB: {{p.current_term.grib}}</div>{% endif %}
+     </div>	      
+
+    <div class="row">       	
+                <div class="span11 well">{{p.current_term.description}}</div>
+    </div>	      
+              
+ {%endfor%}
+
+{% endblock %}

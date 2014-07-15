@@ -1,0 +1,4 @@
+{% for p in proposals %}{% for a in p.current_term.aliases %}{{p.current_term.externalid}}	{{p.current_term.name}}	{{a.externalid}}	{{a.name}}
+{%endfor%}{%endfor%}
+
+

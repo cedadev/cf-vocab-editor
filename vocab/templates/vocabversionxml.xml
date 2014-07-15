@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<standard_name_table xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cf-standard-name-table-1.1.xsd">
+   <version_number>{{vocabversion.version}}</version_number>
+   <last_modified>{% now "Y-m-d" %}T{% now "H:i:s" %}Z</last_modified>
+   <institution>Program for Climate Model Diagnosis and Intercomparison</institution>
+   <contact>webmaster@pcmdi.llnl.gov</contact>
+
+{% for pt in terms %}  
+   <entry id="{{pt.name}}">
+      <canonical_units>{{pt.unit}}</canonical_units>
+      <grib>{{pt.grib}}</grib>
+      <amip>{{pt.amip}}</amip>
+      <description>{{pt.description}}</description>
+   </entry>
+{%endfor%} 
+{% for a in vocabversion.aliases %}  
+  <alias id="{{a.name}}">
+    <entry_id>{{a.termname}}</entry_id>
+  </alias>
+{%endfor%} 
+
+</standard_name_table>

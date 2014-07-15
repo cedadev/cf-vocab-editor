@@ -1,0 +1,84 @@
+
+{% extends "base.html" %}
+	
+{% block title %}Proposals for {{vocab}}{% endblock %}
+
+
+
+
+{% block main %}
+
+<div class=row"> 
+<form>
+<i class="icon-play"></i> <input type="radio" name="status" value="active" {%if not status or status == 'active' %}checked="checked"{%endif%}/>Active (not on list or rejected)
+<input type="radio" name="status" value="new" {%if status == 'new' %}checked="checked"{%endif%}/>New
+<input type="radio" name="status" value="under discussion" {%if status == 'under discussion' %}checked="checked"{%endif%}/>Under discussion
+<input type="radio" name="status" value="accepted" {%if status == 'accepted' %}checked="checked"{%endif%}/>Accepted<br />
+<i class="icon-stop"></i> 
+<input type="radio" name="status" value="inactive" {%if status == 'inactive' %}checked="checked"{%endif%}/>Inactive
+<input type="radio" name="status" value="complete" {%if status == 'complete' %}checked="checked"{%endif%}/>Added to list
+<input type="radio" name="status" value="rejected" {%if status == 'rejected' %}checked="checked"{%endif%}/>Rejected<br />
+<i class="icon-plus"></i> <input type="radio" name="status" value="all" {%if status == 'all' %}checked="checked"{%endif%}/>All<br />
+{%if user %}<i class="icon-envelope"></i> <input type="checkbox" name="mailupdate" {%if mailupdate %}checked="checked"{%endif%}/>Mailupdate format<br />{% endif %}
+<i class="icon-search"></i> Term name filter: <input type="text" name="namefilter" value="{{namefilter|default:''}}"><br />
+<i class="icon-search"></i> proposer filter: <input type="text" name="proposerfilter" value="{{proposerfilter|default:''}}"><br />
+<i class="icon-search"></i> description filter: <input type="text" name="descfilter" value="{{descfilter|default:''}}"><br />
+<i class="icon-search"></i> unit filter: <input type="text" name="unitfilter" value="{{unitfilter|default:''}}"><br />
+<i class="icon-search"></i> Proposal year filter: <input type="text" name="yearfilter" value="{{yearfilter|default:''}}"><br />
+
+<input  class="btn btn-primary" type="submit" value="Filter" name="filter and display">
+<a class="btn" href="/proposals/1">Clear Filters</a>
+
+</form>
+
+{%if user %}
+<a class="btn btn-primary" href="/newproposal/{{vocab.pk}}">Make new proposal</a>
+{% endif %}
+</div>
+
+<p class="text-info">{{proposals|length}} proposals match your search</p>
+
+{%if mailupdate %}
+<textarea rows="30" cols="100">
+{% for p in proposals %}
+{{p.current_term.name|default:"No term set!"}}
+{{p.status}}
+Proposer: {{p.proposer}}
+{{p.mail_list_url}} {{p.mail_list_title}}
+
+{%endfor%}
+</textarea>
+{% else %}
+
+{% for p in proposals %}	
+<form>
+<div class="row">
+  <div class="span12 prop prop-{{p.status}}"><h3>{{p.current_term.name|default:"No term set!"}}</h3> {{p.status}}</div>
+</div>
+<div class="row">
+  <div class="span4">{% if user %}
+                        {% if p.status != 'complete' %}<a class="btn btn-danger" href="/proposal/{{p.id}}/edit">Edit</a>
+                     {% else %}<a class="btn btn-warning" href="/proposal/{{p.id}}">View</a>{%endif%}
+                          {% else %}<a class="btn btn-warning" href="/proposal/{{p.id}}">View</a>{% endif %}</div>
+  <div class="span4">Proposer: {{p.proposer}}</div>
+  <div class="span4">Proposed Date: {{p.proposed_date}}</div>
+</div>
+<div class="row">
+  <div class="span12">Comments: {{p.comment}}</div>
+</div>
+<div class="row">
+  <div class="span6">CF mailing list link: <a href="{{p.mail_list_url}}">{{p.mail_list_title}}</a></div>
+  <div class="span4">Units: {{p.current_term.unit}}  {% if p.current_term.unit_ref %}({{p.current_term.unit_ref}}){% endif %}</div>
+  <div class="span2">{% if p.updatetype == 'New' %}<span class="label label-success">New Term</span>
+                     {% elif p.updatetype == 'Updated' %}<span class="label label-info">Updated term description</span>
+                     {% else%}<span class="label label-warning">Term change from {{p.first_term}}</span>{% endif %}</div>
+</div>
+
+<div class="row">
+  <div class="span12">{{p.current_term.description}}</div>
+</div>
+</form>
+{%endfor%}
+{% endif %}
+
+{% endblock %}

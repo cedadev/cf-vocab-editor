@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:skos="http://www.w3.org/2004/02/skos/core#">
+
+{% for p in proposals %}
+{{p.skosupdate|safe}}
+{% endfor %}
+</rdf:RDF>
+

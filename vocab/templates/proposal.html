@@ -1,0 +1,83 @@
+
+{% extends "base.html" %}
+	
+
+
+
+{% block main %}
+
+
+<form method="post" action="/proposal/{{proposal.id}}/edit">{% csrf_token %}
+
+
+
+<div class="row">
+       <div class="span12 prop prop-{{proposal.status}}">
+              <input type="radio" name="status" value="new" {%if proposal.status == 'new' %}checked="checked"{%endif%}/>New
+              <input type="radio" name="status" value="accepted" {%if proposal.status == 'accepted' %}checked="checked"{%endif%}/>Accepted
+              <input type="radio" name="status" value="rejected" {%if proposal.status == 'rejected' %}checked="checked"{%endif%} />Rejected
+              <input type="radio" name="status" value="under discussion" {%if proposal.status == 'under discussion' %}checked="checked"{%endif%}/>Under Discussion</div>
+</div>
+<div class="row">
+      <div class="span12 prop prop-{{proposal.status}}"><h3>{{proposal.current_term.name|default:"No term set!"}}</h3> {{proposal.status}}</div>
+</div>
+<div class="row">
+      <div class="span3">Created: {{proposal.created}}</div>
+      <div class="span3">Proposer: <input type="text" name="proposer" value="{{proposal.proposer}}"></div>
+      <div class="span2">Proposed Date: <input type="text" name="proposed_date" value="{{proposal.proposed_date|date:"Y-m-d"}}"><p class="muted">Date format YYYY-MM-DD</p></div>
+</div>
+<div class="row">
+      <div class="span8">Comments: <textarea name="comment">{{proposal.comment}}</textarea></div>
+</div>
+<div class="row">
+      <div class="span8">Thread URL: <input type="text" name="mail_list_url" value="{{proposal.mail_list_url}}"><a href="{{proposal.mail_list_url}}">Test mail list link</a></div>
+</div>
+<div class="row">
+      <div class="span8">Thread title:<input type="text" name="mail_list_title" value="{{proposal.mail_list_title}}"></div>
+</div>
+
+
+{% for pt, date in proposed_terms %}      
+<div class="well">
+ <div class="row">
+  		<div class="span12 muted">Change Date: {{date}}</div>
+ </div>
+ <div class="row">
+   		<div class="span8">Term: <b><a href="/termhistory/{{pt.id}}">{{pt.name}}</a></b></div>
+   		<div class="span3">Unit: {{pt.unit}}</div>
+ </div>
+ <div class="row">
+   		<div class="span4">Unit ref: {{pt.unit_ref}}</div>
+   		<div class="span3">AMIP: {{pt.amip}}</div>
+   		<div class="span4">GRIB: {{pt.grib}}</div>
+ </div>
+ <div class="row">
+   		<div class="span8">{{pt.description}}</div>
+ </div>
+</div>
+{%endfor%}
+      
+ <div class="row">
+   		<div class="span4">Term: <input type="text" name="name" value="{{currentterm.name}}"></div>
+   		<div class="span4">unit: <input type="text" name="unit" value="{{currentterm.unit}}"></div>
+ </div>
+ <div class="row">
+  		<div class="span4">Unit ref: <input type="text" name="unitref" value="{{currentterm.unit_ref}}"></div>
+   		<div class="span2">AMIP: <input type="text" name="amip" value="{{currentterm.amip}}"></div>
+   		<div class="span2">GRIB: <input type="text" name="grib" value="{{currentterm.grib}}"></div>
+ </div>
+ <div class="row">
+   		<div class="span10"><textarea name="description" width="90" rows="8" class="input-xxlarge">{{currentterm.description}}</textarea></div>
+ </div>
+<div class="row">
+      <div class="span8"><input type="submit" value="Update proposal"></div>
+</div>
+</form>
+
+<div>
+{%if proposal.status == 'new' %}<a class="btn btn-danger" href="/scrapproposal/{{proposal.id}}">Scrap proposal</a> {%endif%}
+{%if proposal.status == 'rejected' %}<a class="btn btn-danger" href="/scrapproposal/{{proposal.id}}">Scrap proposal</a> {%endif%} 
+<a class="btn btn-primary" href="/newproposal/{{vocab.pk}}">Make new proposal</a></div><p> </p>
+<span class="label label-info">Phrases</span>{{phrases}}
+{% endblock %}
+

@@ -1,0 +1,5 @@
+
+{% for p in proposals %}{{p.current_term.externalid}}	{{p.current_term.name}}	{{p.current_term.unit}}	{{p.current_term.unit_ref}}              
+{%endfor%}
+
+

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+	
+
+{% block title %}{{vocab}} Version:{{vocabversion.version}}{% endblock %}
+
+
+{% block main %}
+<a class="btn" href="/vocabversion/{{vocabversion.pk}}?xml=1">XML version</a>
+<a class="btn" href="/vocabversion/{{vocabversion.pk}}?skos=1">SKOS update version</a>
+<a class="btn" href="/vocabversion/{{vocabversion.pk}}?units=1">units update version</a>
+<a class="btn" href="/vocabversion/{{vocabversion.pk}}?alias=1">Alias update version</a>
+<a class="btn" href="/vocabversion/{{vocabversion.pk}}?updateview=1">Update view</a>
+
+             {% for t in terms %}      
+   <div class="row">       	
+   		{%if user and vocabversion.status != "complete" %} <div class="span2"><a class="btn" href="/newproposal/{{vocab.pk}}?term={{t.pk}}&alias=1" target="_blank">propose change</a></div>{% endif %}
+   		<div class="span8"><h3><a href="/termhistory/{{pt.id}}">{{t.name}}</a></h3></div>
+   		<div class="span2">Unit: {{t.unit}}</div>
+   </div>
+   <div class="row">       	
+   		{%if t.unit_ref %}<div class="span2">Unit ref: {{t.unit_ref}}</div>{% endif %}
+   		{%if t.amip %}<div class="span2">AMIP: {{t.amip}}</div>{% endif %}
+   		{%if t.grib %}<div class="span2">GRIB: {{t.grib}}</div>{% endif %}
+     </div>	      
+    {% for a in t.aliases %}      
+    <div class="row">
+        <div class="span1">Alias:</div>
+        <div class="span5"><span class="label label-info">{{a.name}}</span></div>
+    </div>
+    {%endfor%}
+    <div class="row">       	
+                <div class="span11 well">{{t.description}}</div>
+    </div>	      
+              
+              {%endfor%}
+
+{% endblock %}
+
+

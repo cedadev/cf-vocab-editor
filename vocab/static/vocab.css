@@ -1,0 +1,375 @@
+/* Following information on http://css.maxdesign.com.au/floatutorial/tutorial0816.htm */
+/* Entire Page Contents */
+#loading {
+position:absolute;
+	width:100%;
+	height:2000px;
+	border:1px solid #6694D3;
+	padding-top:100px;
+ 	text-align: center;
+ 	filter:alpha(opacity=60); 
+	-moz-opacity: 0.6; /*firefox*/
+    opacity: 0.6; /*IE*/
+}
+
+body, html {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background-color: #fff;
+	color:#333333;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	line-height:1.4;
+	font-size:small;
+}
+
+body {
+min-width: 980px;
+}
+
+.fullWidth
+{
+width: 100%;
+}
+
+.homeHelpBar
+{
+	width:100%;
+	padding:5px;
+}
+
+.working 
+{
+/* this is the animated loading icon */
+    background: #fff url(http://l.yimg.com/us.yimg.com/i/nt/ic/ut/bsc/busyarr_1.gif) no-repeat 26em 50%;
+}
+
+td.column
+{
+width:400px; /*this is the value for IE. By virtue of its auto-enclosing behavior, it treats width as other browsers treat mn-width.*/
+}
+html>td.column
+{/* IE does not get these values because it does not understand the child selector used on this style block*/
+width:auto;/*returns width to non-explicit default value for non-ie browsers.*/
+min-width:10400px; /*establishes the minimum width to use if the content does not exceed it*/
+}
+
+
+/* Top Banner Div */
+
+/*
+ * !WARNING: the background image needs setting to match any proxy configuration.
+ */
+
+#header {
+ height: 100px;
+ background: #fff;
+ padding: 0;
+ border: solid #333333;
+ border-width: 0 0 2px 0;
+ background-image:url(/layout/icons/header_image.jpg);background-position:right;background-repeat:repeat-x;}
+
+#logo{
+ position:absolute;
+ top:15px;
+ left:20px;
+ width:200px;
+ height:63px;
+ z-index:900;
+}
+
+.searchBar {margin-top: 2px; background-color:  #f0f0f0; } /* Change this color and you need to change the color in the pagetab current */
+.searchBar table {padding-left:10px; padding-bottom:0px; margin:0px;font-weight:bold;}
+.searchBar .hidden {display:none}
+/* .searchOneLine {margin-top: 2px; margin-bottom: 2px; background-color: #f0f0f0; text-align:right; font-size:100%;} */
+
+#Header {color: black; background-color: white; text-align: center; margin-bottom: 10px; padding-top: 3px; padding-right: 0px; padding-left: 0px; padding-bottom: 0px; font-size: medium; font-weight:bold; color:white}
+#Header table {margin:0px; padding:20px;}
+
+/* Main Tabs First Cut */
+/* Reminder: top, right, bottom, left */
+#PageTabs {margin: 5px 0px 0px 0px; line-height:normal;border: solid black; border-width: 0px 0px 0px 0px;}
+#PageTabRow {width:100%; }
+#PageTabRow ul {margin:0 0 0 10px; padding:0; list-style:none; }
+#PageTabRow li {float:left; margin-right:10px; padding: 2px 10px; border: solid black; border-width:1px 1px 0px 1px; }
+#PageTabRow li.current {position:relative; top:1px; background-color: #f0f0f0; } /* color should be same as searchBar! */
+#PageTabRow li.hidden {}
+#PageTabRow a {display:block; text-decoration:none;}
+.line {border-top: 1px solid black; clear:both;}
+
+
+/* In page tabs */
+/* Reminder: top, right, bottom, left */
+.InPageTabs {margin: 5px 20px 0px 20px; line-height:normal; border: solid black; border-width: 0px 0px 0px 0px;}
+
+.InPageHdr ul {margin:0 0 0 10px; padding:0; list-style:none; }
+.InPageHdr li {float:left; margin-right:10px; padding: 2px 10px; border: solid black; border-width:1px 1px 0px 1px; }
+.InPageHdr li.current {position:relative; top:1px; background-color: #f0f0f0; } /* color should be same as searchBar! */
+.InPageHdr li.hidden {}
+.InPageHdr a {display:block; text-decoration:none;}
+.InPageContent {border:1px solid black; clear: both;}
+.InPageContent ul {list-style:none;}
+.InPageContent .hidden {display:none;}
+/* Left Column if Necessary */
+
+#Left{ WIDTH: 220px; FLOAT: left; margin-bottom: 10px; margin-right:10px;margin-left:5px;}
+.tabhdr { margin-top:5px; float:left; line-height:normal;}
+.tabhdr ul {margin:0; padding:0; list-style:none;}
+.tabhdr a:link {display:block; text-decoration:none; color:black; float:left; width:5em;}
+.tabhdr li {margin:0;}
+.tabhdr li.current {float:left; margin-right:3px; padding:2px 10px; background-color:#f0f0f0; 
+                    border-top: 1px solid #3c78b5; border-right: 1px solid #3c78b5; border-left: 1px solid #3c78b5; position:relative;top:1px;}
+.tabhdr li.hidden {float:left; margin-right:3px; padding:2px 10px;
+    border-left:1px solid #3c78b5; border-right:1px solid #3c78b5; border-top:1px solid #3c78b5; }
+.tabcontent {padding:2px 10px; background: #f0f0f0; clear:both; border:1px solid #3c78b5;}
+.tabcontent ul {list-style:none; font-size:50%; margin-left:0; padding-left:0; }
+/* Main Content */
+
+#contents  {border-left: 1px solid #3c78b5;}
+#contentsRight  {border-left: 1px solid #3c78b5; margin-left:250px;}
+
+.error {display:block;text-align:center;font-size:150%;background-color:red; padding:10px;}
+.javascriptWarning 
+{
+	display:block;
+	text-align:center;
+	font-size:150%;
+	background-color:red;
+}
+
+/* The following is the css associated with pretty printing xml */
+.xmlDocBig {font-size:120%}
+.xmlDoc {font-size:80%}
+.xmlElem {PADDING-LEFT: 20px;}
+.xmlAttrVal {COLOR:Red; }
+.xmlAttrTyp {COLOR:Green; }
+.xmlElemTag {COLOR:Blue; }
+.highlight {BACKGROUND-COLOR:Yellow; }
+.ndgem {FONT-WEIGHT: bold}
+
+/* This is the "metadata" css */
+.metadata 
+{
+	PADDING-LEFT: 20px; 
+	font-size:80%; 
+	padding-right:20px;
+}
+#Corrections {PADDING-LEFT:20px; font-size:80%; padding-right:20px;}
+.metadata #keywords {COLOR: Blue; FONT-SIZE:120%; FONT-WEIGHT:bold;}
+.metaentry {COLOR: Black}
+.metadata .hidden {display:none}
+
+.metadata td
+{
+	padding:5px;
+}
+
+
+
+/* We don't want borders on linked images */
+a img {border: none;}
+
+/* StubB */
+.headingblock{
+	background-color: #f0f0f0;
+	border: 1px solid #3c78b5; 
+	margin:10px 60px 20px 50px; 
+	padding:5px;
+}
+/* .bottomblock{border: 1px solid #3c78b5; margin-left:5px;margin-right:5px;padding:5px;}*/
+
+.heading {
+    font-size: 140%;
+    font-weight: bold;
+    color: #003366;
+    padding: 4px;
+    text-align:center;
+    }
+
+/* top right bottom left */
+.metadata #abstract {MARGIN: 5px 20px 10px 20px; font-size:100%;  padding: 8px 8px 8px 8px; text-align:justify;} 
+.metadata h4 {font-size: 120%;
+    line-height: normal;
+    font-weight: bold;
+    color: #003366;
+    padding: 2px 2px 2px 2px;
+    margin: 0px 0px 4px 0px;
+}
+.metadata table 
+{
+	padding:10px;
+/*	width:90%;*/
+}
+
+.metadataSection table
+{
+	width:100%;
+	padding-top:10px;
+	cellspacing:0;
+	cellpadding:3;
+	border:0;
+}
+
+.subTable
+{
+	width:50%;
+	padding-top:100px;
+	cellspacing:0;
+	cellpadding:3;
+	border:0;
+}
+
+.centredSection {
+    font-size: 140%;
+    font-weight: bold;
+    color: #003366;
+    padding: 4px;
+    text-align:center;
+    }
+
+.linehead {
+    font-size: 120%;
+    line-height: normal;
+    font-weight: bold;
+    background-color: #f0f0f0;
+    color: #003366;
+    border-bottom: 1px solid #3c78b5;
+    padding: 2px 2px 2px 2px;
+    margin: 0px 0px 4px 0px;
+}
+
+.emphatic {font-size: 120%;
+    line-height: normal;
+    font-weight: bold;
+    background-color: #f0f0f0;
+    color: #003366;
+    border-bottom: 1px solid #3c78b5;
+    padding: 2px 2px 2px 2px;
+    margin: 0px 0px 4px 0px;
+    }
+.rowhead {
+    font-size: 100%;
+    font-weight: bold;
+    border-bottom: 1px solid #3c78b5;
+    }
+.cellhead { font-size: 100%; font-weight: bold;} 
+
+.key {background-image:url(/layout/icondir/key.gif);}
+
+#map {width:440px; height:220px; border: 1px solid black;}
+/* .map {width:300px;height:250px;border:0;padding:0;margin:0;overflow:hidden;}*/
+/* NumSim */
+
+#visMap {width: 600px; height: 300px; border: 1px solid black;}
+
+.Model {margin: 5px 5px 5px 20px; border: 1px solid #3c78b5; clear:both;}
+
+/* Advanced Search Page */
+
+.clear { clear: both; }
+.outer {border-left: 14px solid #FFFFFF; border-right: 500px solid #FFFFFF; }
+.inner {width: 100%; }
+.inner .hidden {display:none;background-color: #f4f4f4; border:1px solid black;}
+.float-wrap {float: left; width: 100%; margin-left: -14px; }
+#AdvContent {float: right; background-color: #fff;margin-right: -14px;  width: 100%;}
+* html #AdvContent {position: relative; }
+.contentWrap{padding: 5px;}
+.contentWrap ol, .contentWrap ul {margin: 3px 0 5px 35px;}
+.contentWrap li {padding-bottom: 2px;}
+#innerLeft {float: left;width: 1px;min-height: 250px;padding: 0;}
+* html #innerLeft {position: relative; height: 250px;}
+#innerRight {float: right; width: 490px;padding: 5px;min-height: 250px;margin-right: -500px; }
+* html #innerRight {height: 250px;position: relative;  }
+.searchHdr {font-weight:bold;color: #571F12;background-color: #fff;padding:15px 0px 10px 0px;vertical-align:text-top;}
+.SearchBox {padding:0 0 0 60px;}
+.SearchTxt {padding:0 20px 0 0;}
+.SearchStartDate {padding:0 0 0 60px;}
+.SearchEndDate {padding:0 0 0 60px;}
+.SearchSource {padding:0 0 0 60px;}
+.SearchSubmit {padding:30px 0 20px 60px;}
+
+.helptxt {font-size:smaller; background-color:LightGrey;}
+
+/* Results Page */
+
+.summaryText
+{
+	font-size:xx-small;
+}
+
+#context { margin: 5px 10px 5px 10px; border:0; color:#571512;}
+#SemanticSearchBox{margin: 0px 0px 0px 0px; border:0} 
+#SemanticSearchResults { margin: 5px 10px 5px 10px; border:0; color:#571512;} 
+
+.resultsBar {text-align:right; margin: 2px 10px 2px 10px; border:0;}
+.resultsBar .hidden {display:none;}
+.resultsBar .resultsLeft {float:left}
+
+#resultsTab thead {background-color: #075993; color:#FFFFFF; margin: 0px 10px 0px 10px;} 
+#resultsTab th {
+	background-color: #075993;
+	color:#FFFFFF;
+	padding: 3px 10px 3px 10px;
+}
+#resultsTab td {
+	color:#333333;
+	/* line-height:1.5; */
+	padding: 5px 10px 5px 10px;
+}
+/* #resultsTab tbody {vertical-align:baseline; } */
+
+.ndgem {font-weight:bold}
+tr.rowlo {background: #eeeeee;
+border-top:1px;
+border-bottom:1px;
+border-bottom-color:#FFFFFF;
+border-top-color:#000000;
+}
+tr.rowhi {
+border-top:1px;
+border-bottom:1px;
+border-bottom-color:#FFFFFF;
+border-top-color:#000000;
+}
+
+/* Selection page */
+
+.gsummary .hidden {display: none}
+
+
+/* And now the footer */
+#Footer  { color: #999999; background-color: #eeeeee; margin-bottom: 25px; padding-top: 3px; padding-right: 10px; padding-left: 10px; clear: both; border-top: 2px solid #333333; margin-top:10px; font-size:80%; border-bottom: 2px solid #333333;}
+
+/* Footer not yet checked */
+Footer.td {border-style:solid; border-color:black; border-width:1px;}
+/* Footer not yet checked complete */
+
+/* Standard hidden element - used mainly for help text */
+div.hidden {display:none;background-color: #f4f4f4; border:1px solid black;}
+
+#generalRecordTable
+{
+	background-color: lightgray; 
+	border:1px solid black;
+}
+
+.vocabTermTable
+{
+	background-color: lightgray; 
+	border:1px solid black;
+}
+
+.changeRequestTable
+{
+	margin:20px;	
+}
+
+.aliasMessage
+{
+	COLOR:Red; 
+}
+
+.helpicon
+{
+	cursor:help;
+}

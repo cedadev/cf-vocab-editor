@@ -1,0 +1,22 @@
+body{background-color: #F0F0F0;}
+.main{
+    /*background-color: #FFFFFF;
+    border: 1px solid #C8C8C8;
+    border-radius: 10px 10px 10px 10px;*/
+    
+    background-color: #FFFFFF;
+    background-image: -moz-linear-gradient(center top , #FFFFFF, #F5F5F5);
+    background-repeat: repeat-x;
+    border: 1px solid #DDDDDD;
+    border-radius: 3px 3px 3px 3px;
+    box-shadow: 0 1px 0 #FFFFFF inset;
+    padding: 7px 14px;
+
+}
+.prop{background-color:#aaaa66;}
+.prop-new{background-color:#66ccff;}
+.prop-accepted{background-color:#ffcc00;}
+.prop-rejected{background-color:#ff6666;}
+.prop-complete{background-color:#cccccc;}
+.term{background-color:#eeeeee;}
+

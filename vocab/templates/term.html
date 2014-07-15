@@ -1,0 +1,32 @@
+
+{% extends "base.html" %}
+	
+
+{% block main %}
+
+
+<li>{{term.name}}</li>
+<li>{{term.description}}</li>
+<li>{{term.grib}}</li>
+<li>{{term.amip}}</li>
+<li>{{term.externalid}}</li>
+<li>{{term.unit}}</li>
+<li>{{term.unit_ref}}</li>
+
+Proposls with this term version:{% for p in term.proposals %}
+<li>Proposal: <a class="prop-{{p.status}}" href="/proposal/{{p.id}}/edit">{{p}}</a></li>
+{% endfor %}
+<li>List containing this term version: {% for vlv in term.vocab_list_versions %}
+<a href="/vocabversion/{{vlv.id}}">{{vlv}}</a>
+{% endfor %}</li>
+Term versions with the same name:{% for t in term.with_same_name %}
+{% if  term.id != t.id %}<li><a href="/term/{{t.id}}">{{t.id}}</a>{%endif%}
+{% endfor %}
+Aliases: {% for a in term.aliases %}{{a}}{% endfor %}
+
+
+
+
+    
+{% endblock %}
+
