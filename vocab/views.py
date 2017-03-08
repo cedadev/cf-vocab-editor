@@ -1,11 +1,10 @@
 from vocab.models import *
-from django.shortcuts import redirect, render_to_response, get_object_or_404
-from django.core.urlresolvers import reverse
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render_to_response
+from django.views.decorators import csrf
 from django.template import RequestContext
-from django.core.context_processors import csrf
 from datetime import datetime
-import urllib2, re
+import urllib2
+import re
 
 def viewproposal_list(request, id):
     if request.user.is_authenticated(): user=request.user
@@ -88,7 +87,7 @@ def viewproposal_list(request, id):
     context = {'proposals': proposals, 'vocab': vocab, 'user':user, 'status':status, 
                'mailupdate':mailupdate, 'namefilter':namefilter, 'proposerfilter':proposerfilter,
                'descfilter':descfilter, 'unitfilter':unitfilter, 'yearfilter':yearfilter }
-    return render_to_response('view_proposal_list.html', context)  
+    return render_to_response('vocab/view_proposal_list.html', context)
 
 
 
@@ -190,16 +189,17 @@ def editproposal(request, id):
             proposedterm = ProposedTerms(term=newterm, proposal=proposal)
             proposedterm.save()
         
-    #phrase match 
+    # phrase match
     current_term = proposal.current_term()
     if current_term: phrases = current_term.phrases()
     else: phrases = 'Not term to match yet!'     
 
-    context = {'proposal': proposal, 'currentterm':current_term, 'phrases': phrases, 'vocab':proposal.vocab_list, 'proposed_terms':proposal.proposed_terms(), 'user':user }
+    context = {'proposal': proposal, 'currentterm': current_term, 'phrases': phrases, 'vocab': proposal.vocab_list,
+               'proposed_terms': proposal.proposed_terms(), 'user':user }
     # security thing for post requests...
     context.update(csrf(request))
 
-    return render_to_response('proposal.html', context)  
+    return render_to_response('vocab/proposal.html', context)
 
 def viewproposal(request, id):
     if request.user.is_authenticated(): user=request.user
@@ -210,7 +210,7 @@ def viewproposal(request, id):
     # security thing for post requests...
     context.update(csrf(request))
 
-    return render_to_response('view_proposal.html', context )  
+    return render_to_response('vocab/view_proposal.html', context)
 
 
 def viewvocablist(request, id):
@@ -228,12 +228,10 @@ def viewvocablist(request, id):
     if revert and confirm: 
         vocab.revert()
                 
-    context = {'vocab': vocab, 'newversion':newversion, 
-               'confirm':confirm, 'revert':revert, 'user':user }
-    # security thing for post requests...
-    context.update(csrf(request))
+    context = RequestContext(request, {'vocab': vocab, 'newversion': newversion,
+                                       'confirm': confirm, 'revert': revert, 'user': user})
 
-    return render_to_response('vocab.html', context)  
+    return render_to_response('vocab/vocab.html', context)
 
 def viewvocablistversion(request, id):
     if request.user.is_authenticated(): user=request.user
@@ -258,29 +256,29 @@ def viewvocablistversion(request, id):
     context.update(csrf(request))
 
     if xml:
-        response =  render_to_response('vocabversionxml.xml', context)
+        response = render_to_response('vocab/vocabversionxml.xml', context)
         response['Content-Type'] = 'application/data'
         return response 
     if skos: 
-        response =  render_to_response('vocabversionskosupdate.xml', context)
+        response =  render_to_response('vocab/vocabversionskosupdate.xml', context)
         response['Content-Type'] = 'application/data'
         return response 
     if units: 
-        response =  render_to_response('vocabversionunitsupdate.txt', context)
+        response =  render_to_response('vocab/vocabversionunitsupdate.txt', context)
         response['Content-Type'] = 'text/plain'
         return response 
     if alias: 
-        response =  render_to_response('vocabversionaliasupdate.txt', context)
+        response =  render_to_response('vocab/vocabversionaliasupdate.txt', context)
         response['Content-Type'] = 'text/plain'
         return response 
-    if updateview: return render_to_response('vocabversionupdate.html', context)  
-    else:   return render_to_response('vocabversion.html', context)  
+    if updateview: return render_to_response('vocab/vocabversionupdate.html', context)
+    else:   return render_to_response('vocab/vocabversion.html', context)
 
 
 def viewterm(request, id):
     term = Term.objects.get(pk=id)
     context = {'term': term, }
-    return render_to_response('term.html', context)  
+    return render_to_response('vocab/term.html', context)
 
 def viewtermhistory(request, id):
     term = Term.objects.get(pk=id)
@@ -299,7 +297,7 @@ def viewtermhistory(request, id):
          
  
     context = {'term': term, 'hasaliasterms': hasaliasterms, 'isaliasedterms':isaliasedterms}
-    return render_to_response('termhistory.html', context)  
+    return render_to_response('vocab/termhistory.html', context)
     
 
 #def viewvocablistversiondiff(request, id):
