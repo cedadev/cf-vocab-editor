@@ -1,8 +1,10 @@
 
 from django.conf.urls import url
 from vocab.views import *
+from django.contrib import admin
 
 urlpatterns = [
+     url(r'^admin/', admin.site.urls),
      url(r'^proposal/(?P<id>\d+)$', viewproposal),
      url(r'^proposal/(?P<id>\d+)/edit$', editproposal),
      url(r'^vocab/(?P<id>\d+)$', viewvocablist),
