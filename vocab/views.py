@@ -1,6 +1,6 @@
 from vocab.models import *
 from django.shortcuts import redirect, render_to_response
-from django.views.decorators import csrf
+from django.template.context_processors import csrf
 from django.template import RequestContext
 from datetime import datetime
 import urllib2
