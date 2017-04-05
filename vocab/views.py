@@ -228,8 +228,7 @@ def viewvocablist(request, id):
     if revert and confirm: 
         vocab.revert()
                 
-    context = RequestContext(request, {'vocab': vocab, 'newversion': newversion,
-                                       'confirm': confirm, 'revert': revert, 'user': user})
+    context = {'vocab': vocab, 'newversion': newversion, 'confirm': confirm, 'revert': revert, 'user': user}
 
     return render_to_response('vocab/vocab.html', context)
 
