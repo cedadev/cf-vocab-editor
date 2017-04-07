@@ -7,9 +7,10 @@
 {% block main %}
 <a class="btn" href="/vocabversion/{{vocabversion.pk}}?xml=1">XML version</a>
 <a class="btn" href="/vocabversion/{{vocabversion.pk}}?skos=1">SKOS update version</a>
-<a class="btn" href="/vocabversion/{{vocabversion.pk}}?units=1">units update version</a>
-<a class="btn" href="/vocabversion/{{vocabversion.pk}}?alias=1">Alias update version</a>
+<a class="btn" href="/vocabversion/{{vocabversion.pk}}?tsv=1">TSV update version</a>
+<a class="btn" href="/vocabversion/{{vocabversion.pk}}?units=1">alias and unit mapping update</a>
 <a class="btn" href="/vocabversion/{{vocabversion.pk}}?updateview=1">Update view</a>
+<a class="btn" href="/vocabversion/{{vocabversion.pk}}/updateemail">Update email summary</a>
 
              {% for t in terms %}      
    <div class="row">       	

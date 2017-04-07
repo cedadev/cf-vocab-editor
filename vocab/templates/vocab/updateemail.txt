@@ -1,0 +1,15 @@
+
+NEW TERMS:
+{% for n in new %}{{n}}             
+{%endfor%}
+
+UPDATED:
+{% for n in updated %}{{n}}             
+{%endfor%}
+
+
+ALIASES:
+{% for a in aliases %}{{a.name}} -> {{a.termname}}            
+{%endfor%}
+
+

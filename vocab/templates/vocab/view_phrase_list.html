@@ -1,0 +1,19 @@
+
+{% extends "vocab/base.html" %}
+	
+{% block title %}Phrase list{% endblock %}
+
+
+{% block main %}
+
+
+{% for p in phrases %}
+
+<div class="row">
+  <div class="span5">{{p.regex}}</div>
+  <div class="span7">{{p.text}}</div>
+</div>
+
+{%endfor%}
+
+{% endblock %}

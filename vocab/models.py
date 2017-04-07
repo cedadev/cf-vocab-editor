@@ -2,6 +2,7 @@ from django.db import models
 
 import datetime
 import random
+import re
 
 
 class Term(models.Model):
@@ -24,7 +25,7 @@ class Term(models.Model):
             if text != '': pp.append(text)
         return ' '.join(pp)    
     
-    #Generate a new id for term
+    # Generate a new id for term
     def generate_term_id(self):    
         chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
         pid = ''
@@ -79,7 +80,7 @@ class Alias(models.Model):
         return "%s -> %s" % (self.name, self.termname) 
 
     def externalid(self): 
-        term = Term.objects.filter(name = self.name)
+        term = Term.objects.filter(name=self.name)
         return term[0].externalid
 
 
@@ -139,17 +140,16 @@ class VocabList(models.Model):
     def __unicode__(self):
         return "%s" % (self.name,) 
 
+
 class VocabListVersion(models.Model):
     # a version of a vocab list. This has a set of terms and aliases.
     version = models.IntegerField(help_text="version number of vocab list") 
     published_date = models.DateField(auto_now_add=True, help_text="Date when list was published.")
-    status= models.CharField(max_length=64, blank=True, default='Blank', 
-            help_text="Status of list", 
-	    choices=(("Blank","Blank"),
-                 ("copied","copied"),
-                 ("Changed","Changed"),
-                 ("Complete","Complete"),
-                 ) )
+    status = models.CharField(max_length=64, blank=True, default='Blank',
+                              help_text="Status of list",
+                              choices=(("Blank", "Blank"), ("copied", "copied"),
+                                       ("Changed", "Changed"), ("Complete", "Complete"),
+                                       ))
     # Blank  = unpopulated
     # populated = list has old names from masterlist
     # changed = added/updated accepted terms   
@@ -186,21 +186,26 @@ class VocabListVersion(models.Model):
 
 class Proposal(models.Model):
     # a proposal to change a term on a list. 
-    created  = models.DateField(auto_now_add=True, null=True, blank=True, help_text="Date when proposal was created was published.")
-    status= models.CharField(max_length=64, blank=True, default='New', 
-            help_text="Status of request", 
-	    choices=(("new","new"),
-                 ("under discussion","under discussion"),
-                 ("rejected","rejected"),
-                 ("complete","complete"),
-                 ("accepted","accepted")) )
+    created = models.DateField(auto_now_add=True, null=True, blank=True,
+                               help_text="Date when proposal was created was published.")
+    status = models.CharField(max_length=64, blank=True, default='New',
+                              help_text="Status of request",
+                              choices=(("new", "new"),
+                                       ("under discussion", "under discussion"),
+                                       ("rejected", "rejected"),
+                                       ("complete", "complete"),
+                                       ("accepted", "accepted")))
     proposer = models.CharField(max_length=1024, blank=True, default='', help_text="name of proposer")
     proposed_date = models.DateField(null=True, blank=True, help_text="Date when proposal was first made.")
-    comment =  models.TextField(max_length=2048, blank=True, null=True, default='', help_text="comment on proposal")
-    mail_list_url = models.URLField(max_length=1024, blank=True, default='', null=True, help_text="URL of Mailing list thread")
-    mail_list_title = models.CharField(max_length=256, blank=True, default='', null=True, help_text="title of mailing list thread")
-    vocab_list = models.ForeignKey(VocabList, blank=True, null=True,help_text="If the proposal is accepted the term will be added to a version of this list.")
-    vocab_list_version = models.ForeignKey(VocabListVersion, blank=True, null=True,help_text="After it was accepted the term was added to this version of the list.")
+    comment = models.TextField(max_length=2048, blank=True, null=True, default='', help_text="comment on proposal")
+    mail_list_url = models.URLField(max_length=1024, blank=True, default='', null=True,
+                                    help_text="URL of Mailing list thread")
+    mail_list_title = models.CharField(max_length=256, blank=True, default='', null=True,
+                                       help_text="title of mailing list thread")
+    vocab_list = models.ForeignKey(VocabList, blank=True, null=True,
+                                   help_text="If the proposal is accepted the term will be added to a version of this list.")
+    vocab_list_version = models.ForeignKey(VocabListVersion, blank=True, null=True,
+                                           help_text="After it was accepted the term was added to this version of the list.")
     terms = models.ManyToManyField(Term, blank=True, through='ProposedTerms')
     alias = models.BooleanField(default=False)
 
@@ -303,8 +308,8 @@ class Proposal(models.Model):
              <skos:prefLabel>%s</skos:prefLabel><skos:altLabel>null</skos:altLabel>
              <skos:definition>%s</skos:definition><skos:changeNote>I</skos:changeNote>
              <date xmlns="http://purl.org/dc/elements/1.1/">%s</date>
-             </skos:Concept>""" %(current_term.externalid, 
-                    current_term.name, current_term.description, datetime.date.today().isoformat())
+             </skos:Concept>""" %(current_term.externalid, current_term.name,
+                                  current_term.description, datetime.date.today().isoformat())
 
         # old term with no change in term name
         elif not term_name_change:
@@ -312,8 +317,8 @@ class Proposal(models.Model):
              <skos:prefLabel>%s</skos:prefLabel><skos:altLabel>null</skos:altLabel>
              <skos:definition>%s</skos:definition><skos:changeNote>M</skos:changeNote>
              <date xmlns="http://purl.org/dc/elements/1.1/">%s</date>
-             </skos:Concept>""" %(current_term.externalid, 
-                    current_term.name, current_term.description, datetime.date.today().isoformat())
+             </skos:Concept>""" %(current_term.externalid, current_term.name,
+                                  current_term.description, datetime.date.today().isoformat())
  
         # old term with a change in the term name
         elif self.alias and term_name_change: 
@@ -326,15 +331,71 @@ class Proposal(models.Model):
              <skos:prefLabel>%s</skos:prefLabel><skos:altLabel>null</skos:altLabel>
              <skos:definition>%s</skos:definition><skos:changeNote>I</skos:changeNote>
              <date xmlns="http://purl.org/dc/elements/1.1/">%s</date>
-             </skos:Concept>""" %(first_term.externalid, 
-                    first_term.name, first_term.description, datetime.date.today().isoformat(),
-                    current_term.externalid, 
-                    current_term.name, current_term.description, datetime.date.today().isoformat())
+             </skos:Concept>""" %(first_term.externalid, first_term.name,
+                                  first_term.description, datetime.date.today().isoformat(),
+                                  current_term.externalid,
+                                  current_term.name, current_term.description, datetime.date.today().isoformat())
 
+    def tsvupdate(self):
+        # make update tsv for NERC vocab server.
+        current_term = self.current_term()
+        first_term = self.first_term()
+        term_name_change = (first_term.name != current_term.name)
+        version = self.vocab_list_version
 
+        # new record
+        if not self.alias:
+            return "%s\t%s\t\t%s\tI\n" %(current_term.externalid, current_term.name,
+                                         current_term.description)
 
+        # old term with no change in term name
+        elif not term_name_change:
+            return "%s\t%s\t\t%s\tM\n" % (current_term.externalid, current_term.name,
+                                          current_term.description)
+
+        # old term with a change in the term name
+        elif self.alias and term_name_change:
+            return "%s\t%s\t\t%s\tD\n%s\t%s\t\t%s\tI\n" %(first_term.externalid, first_term.name,
+                                                        first_term.description, current_term.externalid,
+                                                        current_term.name, current_term.description)
+
+    def csv_mapping_update(self):
+        current_term = self.current_term()
+        first_term = self.first_term()
+        term_name_change = (first_term.name != current_term.name)
+        unit_change = (first_term.unit_ref != current_term.unit_ref)
+        output = ''
+
+        # add alias mappings
+        for a in current_term.aliases():
+            output += "P07,%s,SYN,P07,%s,I\n" % (current_term.externalid, a.externalid())
+
+        # add unit mappings
+        if current_term.unit_ref:
+            # new record or term changed
+            if term_name_change or not self.alias:
+                output += "P07,%s,MIN,P06,%s,I\n" % (current_term.externalid, current_term.unit_ref)
+            # same term with unit change
+            elif unit_change:
+                if first_term.unit_ref:
+                    output += "P07,%s,MIN,P06,%s,D\n" % (current_term.externalid, first_term.unit_ref)
+                output += "P07,%s,MIN,P06,%s,I\n" % (current_term.externalid, current_term.unit_ref)
+
+        return output
 
     def revert(self):
+    
+        # remove new aliases
+        current_term = self.current_term()
+        first_term = self.first_term()
+        term_name_change = (first_term.name != current_term.name)
+        # old term with a change in the term name 
+        if self.alias and term_name_change:
+            # find aliases for new term and delete them            
+            new_aliases = Alias.objects.filter(termname=current_term.name)
+            for a in new_aliases: 
+                a.delete() 
+    
         # reverse the move to list function. 
         # Assumes vocab list version that the proposals are completed to is removed.
         self.status = "accepted"
@@ -364,30 +425,32 @@ class Proposal(models.Model):
         print "remove %s" % self
         self.delete()            
 
+
 class ProposedTerms(models.Model):
     change_date = models.DateTimeField(auto_now_add=True, help_text="Date the term was last changed.")
     proposal = models.ForeignKey(Proposal, help_text="Link to Request that generated the term")
     term = models.ForeignKey(Term, help_text="Link to the term")
 
     def __unicode__(self):
-        return "Proposed term: %s" % (self.term,) 
+        return "Proposed term: %s" % (self.term,)
 
 
-import re
 class Phrase(models.Model):
-    regex = models.CharField(max_length=1024, blank=True, default='', help_text="Regular expression to find text to replace")
-    text = models.CharField(max_length=4096, blank=True, default='', help_text="Text to replace in term description")
+    regex = models.CharField(max_length=1024, blank=True, default='',
+                             help_text="Regular expression to find text to replace")
+    text = models.CharField(max_length=4096, blank=True, default='',
+                            help_text="Text to replace in term description")
 
     def __unicode__(self):
         return "%s" % (self.text,) 
 
     def isMatch(self, term):
-        '''
+        """
         Test if the input string matches the regular expressions represented by the
         parser entry
         @param inputString: string to test the parser entry with 
         @return: True if the input string matches the parser entry, false otherwise
-        '''
+        """
         regExpString = self.regex
 
         # firstly strip out any 'not' expressions

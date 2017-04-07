@@ -20,12 +20,18 @@
 <input type="radio" name="status" value="rejected" {%if status == 'rejected' %}checked="checked"{%endif%}/>Rejected<br />
 <i class="icon-plus"></i> <input type="radio" name="status" value="all" {%if status == 'all' %}checked="checked"{%endif%}/>All<br />
 {%if user %}<i class="icon-envelope"></i> <input type="checkbox" name="mailupdate" {%if mailupdate %}checked="checked"{%endif%}/>Mailupdate format<br />{% endif %}
-<i class="icon-search"></i> Term name filter: <input type="text" name="namefilter" value="{{namefilter|default:''}}"><br />
-<i class="icon-search"></i> proposer filter: <input type="text" name="proposerfilter" value="{{proposerfilter|default:''}}"><br />
-<i class="icon-search"></i> description filter: <input type="text" name="descfilter" value="{{descfilter|default:''}}"><br />
-<i class="icon-search"></i> unit filter: <input type="text" name="unitfilter" value="{{unitfilter|default:''}}"><br />
-<i class="icon-search"></i> Proposal year filter: <input type="text" name="yearfilter" value="{{yearfilter|default:''}}"><br />
-
+<div class="row">
+  <div class="span6">
+      <i class="icon-search"></i> Term name filter: <input type="text" name="namefilter" value="{{namefilter|default:''}}"><br />
+      <i class="icon-search"></i> Proposer filter: <input type="text" name="proposerfilter" value="{{proposerfilter|default:''}}"><br />
+      <i class="icon-search"></i> Description filter: <input type="text" name="descfilter" value="{{descfilter|default:''}}"><br />
+  </div>
+  <div class="span6">
+      <i class="icon-search"></i> unit filter: <input type="text" name="unitfilter" value="{{unitfilter|default:''}}"><br />
+      <i class="icon-search"></i> Proposal year filter: <input type="text" name="yearfilter" value="{{yearfilter|default:''}}"><br />
+      <i class="icon-search"></i> Comment filter: <input type="text" name="commentfilter" value="{{commentfilter|default:''}}"><br />
+  </div>
+</div>
 <input  class="btn btn-primary" type="submit" value="Filter" name="filter and display">
 <a class="btn" href="/proposals/1">Clear Filters</a>
 
