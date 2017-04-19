@@ -5,6 +5,7 @@
 
 
 {% block main %}
+
 <a class="btn" href="/vocabversion/{{vocabversion.pk}}?xml=1">XML version</a>
 <a class="btn" href="/vocabversion/{{vocabversion.pk}}?skos=1">SKOS update version</a>
 <a class="btn" href="/vocabversion/{{vocabversion.pk}}?tsv=1">TSV update version</a>
@@ -12,10 +13,10 @@
 <a class="btn" href="/vocabversion/{{vocabversion.pk}}?updateview=1">Update view</a>
 <a class="btn" href="/vocabversion/{{vocabversion.pk}}/updateemail">Update email summary</a>
 
-             {% for t in terms %}      
+             {% for t in terms %} 
    <div class="row">       	
    		{%if user and vocabversion.status != "complete" %} <div class="span2"><a class="btn" href="/newproposal/{{vocab.pk}}?term={{t.pk}}&alias=1" target="_blank">propose change</a></div>{% endif %}
-   		<div class="span8"><h3><a href="/termhistory/{{pt.id}}">{{t.name}}</a></h3></div>
+   		<div class="span8"><h3><a href="/termhistory/{{t.id}}">{{t.name}}</a></h3></div>
    		<div class="span2">Unit: {{t.unit}}</div>
    </div>
    <div class="row">       	
