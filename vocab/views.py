@@ -342,8 +342,11 @@ def viewtermhistory(request, id):
     
     isaliasedterms = []
     for a in Alias.objects.filter(name=term.name):
-        if a.term not in isaliasedterms: 
-            isaliasedterms.append(a.term)
+        terms = Term.objects.filter(name=a.termname)
+        for term in terms:
+	
+	    if term not in isaliasedterms:  isaliasedterms.append(term)
+#            isaliasedterms.append(a.termname)
         
          
  
