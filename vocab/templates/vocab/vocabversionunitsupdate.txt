@@ -1,2 +1,1 @@
-{% for p in proposals %}{{p.csv_mapping_update|safe}}
-{%endfor%}
+{% for p in proposals %}{{p.csv_mapping_update|safe}}{%endfor%}
