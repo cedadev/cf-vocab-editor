@@ -129,19 +129,16 @@ def newproposal(request, vocab_id):
 
 def bulkupload(request, vocab_id):
     vocab = VocabList.objects.get(pk=vocab_id)
-    # bulk upload from a csv file
-    upload = request.POST.get('upload', None)
-    print "+++", upload
-    if upload is not None:
-        upload = upload.splitlines()
-    # need file name widget to upload
-
-    print "---->", upload
     context = {'vocab': vocab}
     context.update(csrf(request))
-    # if there is no input file show form page
-    if not upload:
+
+    # bulk upload from a csv file
+    if 'upload' in request.FILES:
+        upload = request.FILES['upload']
+        print dir(upload)
+    else:
         return render_to_response('vocab/bulkupload_form.html', context)
+    print "+++", upload
 
     # upload is deefined so run processing of upload
     reader = csv.reader(upload)
@@ -157,15 +154,17 @@ def bulkupload(request, vocab_id):
 
         # blank line ends the proposal header
         # check we have proposer, proposed date, thread information
-        if not row[0].strip():
+        if not row[0].strip() and header:
             message += " === End of header\n"
             header = False
-            if not proposer: message += "Error: No proposer set\n"
+            if not proposer:
+                message += "Error: No proposer set\n"
             if not proposed_date: message += "Error: No proposded date set\n"
             if not thread_url: message += "Error: No thread_url set\n"
             if not thread_title: message += "Error: No thread_title set\n"
-            context.update({'message': message})
-            return render('vocab/bulkupload_output.txt', context=context, content_type='text/plain')
+            if not (proposer and proposed_date and thread_url and thread_title):
+                context.update({'message': message})
+                return render(request, 'vocab/bulkupload_output.txt', context=context, content_type='text/plain')
 
         # read key value pairs for header
         if header:
@@ -226,7 +225,7 @@ def bulkupload(request, vocab_id):
 
     context.update({'message': message})
     print context
-    return render_to_response('vocab/bulkupload_output.txt', context)
+    return render(request, 'vocab/bulkupload_output.txt', context=context, content_type='text/plain')
 
 
 def scrapproposal(request, proposal_id):
