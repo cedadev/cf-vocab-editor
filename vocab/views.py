@@ -150,21 +150,28 @@ def bulkupload(request, vocab_id):
     thread_title = None
 
     for row in reader:
-        message += ', '.join(row) + '\n'
+        #message += ', '.join(row) + '\n'
 
         # blank line ends the proposal header
         # check we have proposer, proposed date, thread information
         if not row[0].strip() and header:
-            message += " === End of header\n"
             header = False
             if not proposer:
                 message += "Error: No proposer set\n"
             if not proposed_date: message += "Error: No proposded date set\n"
             if not thread_url: message += "Error: No thread_url set\n"
             if not thread_title: message += "Error: No thread_title set\n"
+            # if propsal info not full set then stop
             if not (proposer and proposed_date and thread_url and thread_title):
                 context.update({'message': message})
                 return render(request, 'vocab/bulkupload_output.txt', context=context, content_type='text/plain')
+            else:
+                message += "Proposal Info\n=============\n"
+                message += "proposer: %s\n" % proposer
+                message += "proposed_date: %s\n" % proposed_date
+                message += "thread_url: %s\n" % thread_url
+                message += "thread_title: %s\n\n\n" % thread_title
+                message += "Adding names\n============\n"
 
         # read key value pairs for header
         if header:
@@ -175,9 +182,13 @@ def bulkupload(request, vocab_id):
 
         # name, unit, definition
         if not header:
-            if row[0].strip() == '': continue
+            # skip blank lines
+            if row[0].strip() == '':
+                continue
+            # if there in only a name and not a unit then write and error and skip
             if len(row) > 1 and row[1] == '':
                 message += "Error: No unit for %s\n" % row[0]
+                continue
             if len(row) == 2:
                 termname, unit, unitref, definition = row[0].strip(), row[1].strip(), '', ''
             elif len(row) == 3:
@@ -193,38 +204,29 @@ def bulkupload(request, vocab_id):
                     if text != '':
                         definition += " " + text
 
+            # check not existing already - only new terms
+            if len(Term.objects.filter(name=termname)) != 0:
+                message += "Error: can't make a duplicate %s\n" % termname
+                continue
+
+            # add info to db
             try:
                 p = Proposal(status='new', proposer=proposer, proposed_date=proposed_date,
                              comment='Created by bulk upload', mail_list_url=thread_url,
                              mail_list_title=thread_title, vocab_list=vocab)
                 p.save()
-            except:
-                message += "Fail: proposal not made %s" % termname
-                continue
-
-            # check not existing already - only new terms
-            if len(Term.objects.filter(name=termname)) != 0:
-                message += "Fail: can't make a duplicate %s\n" % termname
-                continue
-
-            try:
                 t = Term(name=termname, description=definition, unit=unit, unit_ref=unitref)
                 t.save()
-            except:
-                message += "Fail: term not made %s\n" % termname
-                continue
-
-            try:
                 pt = ProposedTerms(proposal=p, term=t)
                 pt.save()
-            except:
-                message += "Fail: could not link term and proposal %s\n" % termname
+            except Exception as e:
+                print e
+                message += "Error: Could not make term and/or proposal objects in db. %s\n" % termname
                 continue
 
             message += "Success: Added %s\n" % termname
 
     context.update({'message': message})
-    print context
     return render(request, 'vocab/bulkupload_output.txt', context=context, content_type='text/plain')
 
 

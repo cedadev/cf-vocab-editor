@@ -6,34 +6,37 @@
 
 <form method="post" action="/bulkupload/{{vocab.id}}" enctype="multipart/form-data">{% csrf_token %}
 
-    # script to bulk upload terms from a CSV file for new terms.
-#  The file has to have a header with proposal details and a body listing the
-#  term names, units, unitref and definitions. A blanke line signals the end of the header.
-#  Like this:
-#
-#proposer,Sam,
-#proposed_date,2014-01-20,
-#thread_url,http://badc.nerc.ac.uk,
-#thread_title,test thread,
-#,,
-#,,
-#test_bulk_term1,m,,
-#test_bulk_term2,C,UKMS,
-#test_bulk_term3,m3,,
-#test_bulk_term4,m3, tt,
-#test_bulk_term5,ff,"def 5, 'quote' - A prob"""
-#test_bulk_term6,m3 tt,,def 6
-#test_bulk_term7,m3 tt,,
-#test_bulk_term8,m3 tt,,
-#test_bulk_term9,m3 tt,,
-#
-# Sam Pepler 2014
+<h1>Bulk upload</h1>
+    <p>This form is used to bulk upload terms from a CSV file. It only works for new terms.
+    The CSV file has to have a header with proposal details and a body listing the
+    term names, units, unitref (optional) and definitions (optional). A blanke line signals the end of the header.
+    If the definition is "GETDEF" then the phrase list is used to construct the first guess at the definition.
+    An example file is below</p>
+
+
+<pre>
+proposer,Sam,
+proposed_date,2014-01-20,
+thread_url,http://badc.nerc.ac.uk,
+thread_title,test thread,
+,,
+,,
+test_bulk_term1,m,XXX,
+test_bulk_term2,C,UKMS, Term 2 definition
+test_bulk_term3,m3,,This name has no unit ref and thats fine.
+test_bulk_term4,m2
+test_bulk_term5,ff,YYYY ,"This def has a comma in, but thats ok too."
+test_bulk_term6,m3 tt,,GETDEF
+test_bulk_my_term7,m3 tt,,GETDEF
+</pre>
 
 <div class="row">
-      <div class="span3">CSV file: <input type="file" name="upload"></div>
-      <div class="span8"><input type="submit" value="Upload proposals"></div>
+      <div class="span6">CSV file <input type="file" name="upload"></div>
+      <div class="span6"><input class="btn btn-danger" type="submit" value="Upload proposals"></div>
 </div>
 
+
+</form>
 
 {% endblock %}
 
