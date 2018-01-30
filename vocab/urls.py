@@ -12,7 +12,7 @@ urlpatterns = [
      url(r'^vocabversion/(?P<id>\d+)/updateemail$', updateemail),
      url(r'^proposals/(?P<id>\d+)$', viewproposal_list),
      url(r'^newproposal/(?P<vocab_id>\d+)', newproposal),
-     url(r'^bullkupload/(?P<vocab_id>\d+)', bulkupload),
+     url(r'^bulkupload/(?P<vocab_id>\d+)', bulkupload),
      url(r'^scrapproposal/(?P<proposal_id>\d+)', scrapproposal),
      url(r'^term/(?P<id>\d+)', viewterm),
      url(r'^termhistory/(?P<id>\d+)', viewtermhistory),

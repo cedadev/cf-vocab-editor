@@ -1,5 +1,5 @@
 from vocab.models import *
-from django.shortcuts import redirect, render_to_response, get_object_or_404
+from django.shortcuts import redirect, render_to_response, get_object_or_404, render
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
@@ -131,12 +131,17 @@ def bulkupload(request, vocab_id):
     vocab = VocabList.objects.get(pk=vocab_id)
     # bulk upload from a csv file
     upload = request.POST.get('upload', None)
-    upload = upload.splitlines()
+    print "+++", upload
+    if upload is not None:
+        upload = upload.splitlines()
     # need file name widget to upload
 
+    print "---->", upload
+    context = {'vocab': vocab}
+    context.update(csrf(request))
     # if there is no input file show form page
     if not upload:
-        return render_to_response('vocab/bulkupload_form.html', {"vocab": vocab, })
+        return render_to_response('vocab/bulkupload_form.html', context)
 
     # upload is deefined so run processing of upload
     reader = csv.reader(upload)
@@ -146,6 +151,7 @@ def bulkupload(request, vocab_id):
     proposed_date = None
     thread_url = None
     thread_title = None
+
     for row in reader:
         message += ', '.join(row) + '\n'
 
@@ -158,7 +164,8 @@ def bulkupload(request, vocab_id):
             if not proposed_date: message += "Error: No proposded date set\n"
             if not thread_url: message += "Error: No thread_url set\n"
             if not thread_title: message += "Error: No thread_title set\n"
-            return render_to_response('vocab/bulkupload_output.txt', context={"message": message, }, )
+            context.update({'message': message})
+            return render('vocab/bulkupload_output.txt', context=context, content_type='text/plain')
 
         # read key value pairs for header
         if header:
@@ -217,7 +224,9 @@ def bulkupload(request, vocab_id):
 
             message += "Success: Added %s\n" % termname
 
-    return render_to_response('vocab/bulkupload_output.txt', context={"message": message, }, )
+    context.update({'message': message})
+    print context
+    return render_to_response('vocab/bulkupload_output.txt', context)
 
 
 def scrapproposal(request, proposal_id):
@@ -238,7 +247,7 @@ def editproposal(request, id):
     status= request.POST.get('status', None)
     proposer = request.POST.get('proposer', None)
     proposed_date = request.POST.get('proposed_date', None)
-    comment =  request.POST.get('comment', None)
+    comment = request.POST.get('comment', None)
     mail_list_url = request.POST.get('mail_list_url', None)
     mail_list_title = request.POST.get('mail_list_title', None) 
 
@@ -298,20 +307,23 @@ def editproposal(request, id):
             proposedterm = ProposedTerms(term=newterm, proposal=proposal)
             proposedterm.save()
         
-    #phrase match 
+    # phrase match
     current_term = proposal.current_term()
     if current_term: phrases = current_term.phrases()
     else: phrases = 'Not term to match yet!'     
 
-    context = {'proposal': proposal, 'currentterm':current_term, 'phrases': phrases, 'vocab':proposal.vocab_list, 'proposed_terms':proposal.proposed_terms(), 'user':user }
+    context = {'proposal': proposal, 'currentterm':current_term, 'phrases': phrases, 'vocab': proposal.vocab_list,
+               'proposed_terms': proposal.proposed_terms(), 'user': user}
     # security thing for post requests...
     context.update(csrf(request))
 
     return render_to_response('vocab/proposal.html', context)  
 
 def viewproposal(request, id):
-    if request.user.is_authenticated(): user=request.user
-    else: user = None
+    if request.user.is_authenticated():
+        user = request.user
+    else:
+        user = None
  
     proposal = Proposal.objects.get(pk=id)
     context = {'proposal': proposal, 'vocab':proposal.vocab_list, 'proposed_terms':proposal.proposed_terms() }

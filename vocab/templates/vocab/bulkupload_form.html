@@ -4,7 +4,7 @@
 {% block main %}
 
 
-<form method="post" action="/bulkupload/{{vocab.id}}">{% csrf_token %}
+<form method="post" action="/bulkupload/{{vocab.id}}" enctype="multipart/form-data">{% csrf_token %}
 
     # script to bulk upload terms from a CSV file for new terms.
 #  The file has to have a header with proposal details and a body listing the
@@ -30,8 +30,8 @@
 # Sam Pepler 2014
 
 <div class="row">
-      <div class="span3">CSV file: <input type="file" name="upload"></div>
-      <div class="span8"><input type="submit" value="Update proposal"></div>
+      <div class="span3">CSV file: <input type="file" name="upload" id="upload"></div>
+      <div class="span8"><input type="submit" value="Upload proposals"></div>
 </div>
 
 
