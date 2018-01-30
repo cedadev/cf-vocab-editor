@@ -1,0 +1,39 @@
+
+{% extends "vocab/base.html" %}
+
+{% block main %}
+
+
+<form method="post" action="/bulkupload/{{vocab.id}}">{% csrf_token %}
+
+    # script to bulk upload terms from a CSV file for new terms.
+#  The file has to have a header with proposal details and a body listing the
+#  term names, units, unitref and definitions. A blanke line signals the end of the header.
+#  Like this:
+#
+#proposer,Sam,
+#proposed_date,2014-01-20,
+#thread_url,http://badc.nerc.ac.uk,
+#thread_title,test thread,
+#,,
+#,,
+#test_bulk_term1,m,,
+#test_bulk_term2,C,UKMS,
+#test_bulk_term3,m3,,
+#test_bulk_term4,m3, tt,
+#test_bulk_term5,ff,"def 5, 'quote' - A prob"""
+#test_bulk_term6,m3 tt,,def 6
+#test_bulk_term7,m3 tt,,
+#test_bulk_term8,m3 tt,,
+#test_bulk_term9,m3 tt,,
+#
+# Sam Pepler 2014
+
+<div class="row">
+      <div class="span3">CSV file: <input type="file" name="upload"></div>
+      <div class="span8"><input type="submit" value="Update proposal"></div>
+</div>
+
+
+{% endblock %}
+

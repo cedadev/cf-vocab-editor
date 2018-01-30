@@ -451,6 +451,12 @@ class Phrase(models.Model):
         @param inputString: string to test the parser entry with 
         @return: True if the input string matches the parser entry, false otherwise
         """
+
+        if type(term) == Term:
+            term_text = term.name
+        else:
+            term_text = term
+
         regExpString = self.regex
 
         # firstly strip out any 'not' expressions
@@ -481,17 +487,17 @@ class Phrase(models.Model):
             andREs = andRegexp
 
         for andRegexp in andREs:
-            if not re.search(andRegexp.strip(), term.name):
+            if not re.search(andRegexp.strip(), term_text):
                 return ''
 
         if orREs:
             for orRegexp in orREs:
-                if re.search(orRegexp.strip(), term.name):
+                if re.search(orRegexp.strip(), term_text):
                     return self.text
             return ''
         
         for notRegexp in notREs:
-            if re.search(notRegexp.strip(), term.name):
+            if re.search(notRegexp.strip(), term_text):
                 return ''
 
         return self.text      

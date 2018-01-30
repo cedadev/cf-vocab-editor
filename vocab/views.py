@@ -6,6 +6,7 @@ from django.template import RequestContext
 from django.template.context_processors import csrf
 from datetime import datetime
 import urllib2, re
+import csv
 
 def viewproposal_list(request, id):
     if request.user.is_authenticated(): user=request.user
@@ -124,6 +125,100 @@ def newproposal(request, vocab_id):
         proposedterm.save()
 
     return redirect('/proposal/%s/edit' % proposal.pk)
+
+
+def bulkupload(request, vocab_id):
+    vocab = VocabList.objects.get(pk=vocab_id)
+    # bulk upload from a csv file
+    upload = request.POST.get('upload', None)
+    upload = upload.splitlines()
+    # need file name widget to upload
+
+    # if there is no input file show form page
+    if not upload:
+        return render_to_response('vocab/bulkupload_form.html', {"vocab": vocab, })
+
+    # upload is deefined so run processing of upload
+    reader = csv.reader(upload)
+    message = ''
+    header = True
+    proposer = None
+    proposed_date = None
+    thread_url = None
+    thread_title = None
+    for row in reader:
+        message += ', '.join(row) + '\n'
+
+        # blank line ends the proposal header
+        # check we have proposer, proposed date, thread information
+        if not row[0].strip():
+            message += " === End of header\n"
+            header = False
+            if not proposer: message += "Error: No proposer set\n"
+            if not proposed_date: message += "Error: No proposded date set\n"
+            if not thread_url: message += "Error: No thread_url set\n"
+            if not thread_title: message += "Error: No thread_title set\n"
+            return render_to_response('vocab/bulkupload_output.txt', context={"message": message, }, )
+
+        # read key value pairs for header
+        if header:
+            if row[0].strip() == 'proposer': proposer = row[1].strip()
+            if row[0].strip() == 'proposed_date': proposed_date = row[1].strip()
+            if row[0].strip() == 'thread_url': thread_url = row[1].strip()
+            if row[0].strip() == 'thread_title': thread_title = row[1].strip()
+
+        # name, unit, definition
+        if not header:
+            if row[0].strip() == '': continue
+            if len(row) > 1 and row[1] == '':
+                message += "Error: No unit for %s\n" % row[0]
+            if len(row) == 2:
+                termname, unit, unitref, definition = row[0].strip(), row[1].strip(), '', ''
+            elif len(row) == 3:
+                termname, unit, unitref, definition = row[0].strip(), row[1].strip(), row[2].strip(), ''
+            else:
+                termname, unit, unitref, definition = row[0].strip(), row[1].strip(), row[2].strip(), row[3].strip()
+
+            # if the definition is 'GETDEF' then insert phases
+            if definition == 'GETDEF':
+                definition = ''
+                for p in Phrase.objects.all():
+                    text = p.isMatch(termname)
+                    if text != '':
+                        definition += " " + text
+
+            try:
+                p = Proposal(status='new', proposer=proposer, proposed_date=proposed_date,
+                             comment='Created by bulk upload', mail_list_url=thread_url,
+                             mail_list_title=thread_title, vocab_list=vocab)
+                p.save()
+            except:
+                message += "Fail: proposal not made %s" % termname
+                continue
+
+            # check not existing already - only new terms
+            if len(Term.objects.filter(name=termname)) != 0:
+                message += "Fail: can't make a duplicate %s\n" % termname
+                continue
+
+            try:
+                t = Term(name=termname, description=definition, unit=unit, unit_ref=unitref)
+                t.save()
+            except:
+                message += "Fail: term not made %s\n" % termname
+                continue
+
+            try:
+                pt = ProposedTerms(proposal=p, term=t)
+                pt.save()
+            except:
+                message += "Fail: could not link term and proposal %s\n" % termname
+                continue
+
+            message += "Success: Added %s\n" % termname
+
+    return render_to_response('vocab/bulkupload_output.txt', context={"message": message, }, )
+
 
 def scrapproposal(request, proposal_id):
     proposal = Proposal.objects.get(pk=proposal_id)
