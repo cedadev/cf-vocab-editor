@@ -26,7 +26,8 @@ class Term(models.Model):
 
     def save(self, *args, **kwargs):
         # overload save to get ride of smart quotes
-        self.description = self.description.translate(convert_smart_quotes_table)
+        if type(self.description) == str:
+            self.description = self.description.translate(convert_smart_quotes_table)
         models.Model.save(self, *args, **kwargs)
 
     def phrases(self):
@@ -457,7 +458,8 @@ class Phrase(models.Model):
 
     def save(self, *args, **kwargs):
         # overload save to get ride of smart quotes
-        self.text = self.text.translate(convert_smart_quotes_table)
+        if type(self.text) == str:
+            self.text = self.text.translate(convert_smart_quotes_table)
         models.Model.save(self, *args, **kwargs)
 
     def isMatch(self, term):
