@@ -135,7 +135,6 @@ def bulkupload(request, vocab_id):
     # bulk upload from a csv file
     if 'upload' in request.FILES:
         upload = request.FILES['upload']
-        print dir(upload)
     else:
         return render_to_response('vocab/bulkupload_form.html', context)
     print "+++", upload
@@ -225,6 +224,48 @@ def bulkupload(request, vocab_id):
                 continue
 
             message += "Success: Added %s\n" % termname
+
+    context.update({'message': message})
+    return render(request, 'vocab/bulkupload_output.txt', context=context, content_type='text/plain')
+
+
+def bulkupload_phrases(request):
+    context = {}
+    context.update(csrf(request))
+
+    # bulk upload from a csv file
+    if 'upload' in request.FILES:
+        upload = request.FILES['upload']
+    else:
+        return render_to_response('vocab/bulkupload_phrases_form.html', context)
+
+    # upload is deefined so run processing of upload
+    reader = csv.reader(upload)
+    message = ''
+
+    for row in reader:
+
+        # lines of form: regex, definition
+        # skip blank lines
+        if row[0].strip() == '':
+            continue
+        # if there in only a regex then skip.
+        if len(row) > 1 and row[1] == '':
+            message += "Error: No definition %s\n" % row[0]
+            continue
+
+        regex, text = row[0].strip(), row[1].strip()
+
+        # add info to db
+        try:
+            p = Phrase(regex=regex, text=text)
+            p.save()
+        except Exception as e:
+            print e
+            message += "Error: Could not make phrase objects in db. %s\n" % regex
+            continue
+
+        message += "Success: Added %s\n" % regex
 
     context.update({'message': message})
     return render(request, 'vocab/bulkupload_output.txt', context=context, content_type='text/plain')
