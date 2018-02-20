@@ -8,30 +8,41 @@ from datetime import datetime
 import urllib2, re
 import csv
 
+
 def viewproposal_list(request, id):
-    if request.user.is_authenticated(): user=request.user
-    else: user = None
+    if request.user.is_authenticated():
+        user = request.user
+    else:
+        user = None
 
     # get status filter
-    status = request.GET.get('status', None) 
-    mailupdate = request.GET.get('mailupdate', None) 
-    namefilter = request.GET.get('namefilter', None) 
-    proposerfilter = request.GET.get('proposerfilter', None) 
-    descfilter = request.GET.get('descfilter', None) 
+    status = request.GET.get('status', None)
+    mailupdate = request.GET.get('mailupdate', None)
+    namefilter = request.GET.get('namefilter', None)
+    proposerfilter = request.GET.get('proposerfilter', None)
+    descfilter = request.GET.get('descfilter', None)
     commentfilter = request.GET.get('commentfilter', None)
     unitfilter = request.GET.get('unitfilter', None)
-    yearfilter = request.GET.get('yearfilter', None) 
+    yearfilter = request.GET.get('yearfilter', None)
     vocab = VocabList.objects.get(pk=id)
     proposals = Proposal.objects.filter(vocab_list=vocab)
 
-    if status == 'accepted': proposals = proposals.filter(status='accepted')
-    elif status == 'complete': proposals = proposals.filter(status='complete')
-    elif status == 'rejected': proposals = proposals.filter(status='rejected')
-    elif status == 'new': proposals = proposals.filter(status='new')
-    elif status == 'under discussion': proposals = proposals.filter(status='under discussion')
-    elif status == 'all': pass
-    elif status == 'inactive': proposals = proposals.exclude(status='new').exclude(status='under discussion').exclude(status='accepted')
-    else: proposals = proposals.exclude(status='complete').exclude(status='rejected')
+    if status == 'accepted':
+        proposals = proposals.filter(status='accepted')
+    elif status == 'complete':
+        proposals = proposals.filter(status='complete')
+    elif status == 'rejected':
+        proposals = proposals.filter(status='rejected')
+    elif status == 'new':
+        proposals = proposals.filter(status='new')
+    elif status == 'under discussion':
+        proposals = proposals.filter(status='under discussion')
+    elif status == 'all':
+        pass
+    elif status == 'inactive':
+        proposals = proposals.exclude(status='new').exclude(status='under discussion').exclude(status='accepted')
+    else:
+        proposals = proposals.exclude(status='complete').exclude(status='rejected')
 
     proposals = proposals.order_by('-created', 'mail_list_title')
 
@@ -42,11 +53,11 @@ def viewproposal_list(request, id):
         for p in proposals:
             if p.current_term():
                 for nf in namefilters:
-                    if p.current_term().name.find(nf) != -1: 
+                    if p.current_term().name.find(nf) != -1:
                         filtered.append(p)
                         break
         proposals = filtered
-    
+
     # filter by proposer name
     if proposerfilter:
         proposerfilters = proposerfilter.split()
@@ -54,7 +65,7 @@ def viewproposal_list(request, id):
         for p in proposals:
             if p.proposer:
                 for pf in proposerfilters:
-                    if p.proposer.lower().find(pf.lower()) != -1: 
+                    if p.proposer.lower().find(pf.lower()) != -1:
                         filtered.append(p)
                         break
         proposals = filtered
@@ -66,7 +77,7 @@ def viewproposal_list(request, id):
         for p in proposals:
             if p.current_term():
                 for df in descfilters:
-                    if p.current_term().description.lower().find(df.lower()) != -1: 
+                    if p.current_term().description.lower().find(df.lower()) != -1:
                         filtered.append(p)
                         break
         proposals = filtered
@@ -83,7 +94,7 @@ def viewproposal_list(request, id):
                         break
         proposals = filtered
 
-   # filter by unit
+        # filter by unit
     if unitfilter:
         filtered = []
         for p in proposals:
@@ -91,7 +102,7 @@ def viewproposal_list(request, id):
                 if p.current_term().unit.find(unitfilter) != -1: filtered.append(p)
         proposals = filtered
 
-   # filter by proposal date
+        # filter by proposal date
     if yearfilter:
         filtered = []
         for p in proposals:
@@ -99,24 +110,24 @@ def viewproposal_list(request, id):
                 if "%s" % p.proposed_date.year == yearfilter: filtered.append(p)
         proposals = filtered
 
-    context = {'proposals': proposals, 'vocab': vocab, 'user':user, 'status':status, 
-               'mailupdate':mailupdate, 'namefilter':namefilter, 'proposerfilter':proposerfilter,
-               'descfilter':descfilter, 'unitfilter':unitfilter, 'yearfilter':yearfilter, 'commentfilter':commentfilter }
-    return render_to_response('vocab/view_proposal_list.html', context)  
-
+    context = {'proposals': proposals, 'vocab': vocab, 'user': user, 'status': status,
+               'mailupdate': mailupdate, 'namefilter': namefilter, 'proposerfilter': proposerfilter,
+               'descfilter': descfilter, 'unitfilter': unitfilter, 'yearfilter': yearfilter,
+               'commentfilter': commentfilter}
+    return render_to_response('vocab/view_proposal_list.html', context)
 
 
 def newproposal(request, vocab_id):
     vocab = VocabList.objects.get(pk=vocab_id)
-    #flag proposal as a change to an existing term. This means it needs an alias
+    # flag proposal as a change to an existing term. This means it needs an alias
     # for the old term
-    alias= request.GET.get('alias', False)
+    alias = request.GET.get('alias', False)
     if alias: alias = True
     proposal = Proposal(status='new', vocab_list=vocab, alias=alias)
     proposal.save()
 
     # if existing term then add that
-    term= request.GET.get('term', None)
+    term = request.GET.get('term', None)
     print term
     if term:
         term = Term.objects.get(pk=term)
@@ -149,7 +160,7 @@ def bulkupload(request, vocab_id):
     thread_title = None
 
     for row in reader:
-        #message += ', '.join(row) + '\n'
+        # message += ', '.join(row) + '\n'
 
         # blank line ends the proposal header
         # check we have proposer, proposed date, thread information
@@ -254,7 +265,8 @@ def bulkupload_phrases(request):
             message += "Error: No definition %s\n" % row[0]
             continue
 
-        regex, text = row[0].strip(), row[1].strip()
+        regex = row[0].strip()
+        text = row[1].strip()
 
         # add info to db
         try:
@@ -277,30 +289,31 @@ def scrapproposal(request, proposal_id):
     if proposal.status == 'rejected' or proposal.status == 'new':
         proposal.scrap()
     return redirect('/proposals/%s' % vocab.pk)
-    
-   
+
 
 def editproposal(request, id):
-    if request.user.is_authenticated(): user=request.user
-    else: user = None
- 
+    if request.user.is_authenticated():
+        user = request.user
+    else:
+        user = None
+
     proposal = Proposal.objects.get(pk=id)
     # update proposal info
-    status= request.POST.get('status', None)
+    status = request.POST.get('status', None)
     proposer = request.POST.get('proposer', None)
     proposed_date = request.POST.get('proposed_date', None)
     comment = request.POST.get('comment', None)
     mail_list_url = request.POST.get('mail_list_url', None)
-    mail_list_title = request.POST.get('mail_list_title', None) 
+    mail_list_title = request.POST.get('mail_list_title', None)
 
     if status: proposal.status = status
     if proposer: proposal.proposer = proposer.strip()
     if proposed_date: proposal.proposed_date = datetime.strptime(proposed_date, "%Y-%m-%d")
-    if comment != None: proposal.comment = comment
+    if comment is not None: proposal.comment = comment
 
-    #try and get title from mail list 
+    # try and get title from mail list
     if mail_list_url and not mail_list_title:
-        try: 
+        try:
             f = urllib2.urlopen(mail_list_url)
             page = f.read(500)
             m = re.search('<TITLE>(.*)', page)
@@ -308,7 +321,7 @@ def editproposal(request, id):
             mail_list_title = title.strip()
         except:
             pass
-  
+
     if mail_list_url: proposal.mail_list_url = mail_list_url.strip()
     if mail_list_title: proposal.mail_list_title = mail_list_title.strip()
     proposal.save()
@@ -317,8 +330,12 @@ def editproposal(request, id):
     current_term = proposal.current_term()
     if current_term:
         (ct_name, ct_desc, ct_unit, ct_unit_ref, ct_amip, ct_grib, ct_externalid) = (current_term.name,
-            current_term.description, current_term.unit, current_term.unit_ref, current_term.amip, 
-            current_term.grib, current_term.externalid)
+                                                                                     current_term.description,
+                                                                                     current_term.unit,
+                                                                                     current_term.unit_ref,
+                                                                                     current_term.amip,
+                                                                                     current_term.grib,
+                                                                                     current_term.externalid)
     else:
         (ct_name, ct_desc, ct_unit, ct_unit_ref, ct_amip, ct_grib, ct_externalid) = ('', '', '', '', '', '', '')
 
@@ -328,78 +345,88 @@ def editproposal(request, id):
     description = request.POST.get('description', None)
     if description: description = description.strip()
     unit = request.POST.get('unit', None)
-    if unit: unit=unit.strip()
+    if unit: unit = unit.strip()
     unit_ref = request.POST.get('unitref', None)
     amip = request.POST.get('amip', None)
     grib = request.POST.get('grib', None)
-    if name: # if name is blank then don't make a new term
-        if name==ct_name and description==ct_desc and unit==ct_unit and unit_ref==ct_unit_ref and amip==ct_amip and grib==ct_grib:
+    if name:  # if name is blank then don't make a new term
+        if name == ct_name and description == ct_desc and unit == ct_unit and unit_ref == ct_unit_ref and amip == ct_amip and grib == ct_grib:
             # term is identical to exiting current term don't add another.
             pass
         elif name == ct_name:
             # if the term name has not changed then maintain the external id.
-            newterm = Term(name=name, description=description, unit=unit, unit_ref=unit_ref, amip=amip, grib=grib, externalid=ct_externalid)
+            newterm = Term(name=name, description=description, unit=unit, unit_ref=unit_ref, amip=amip, grib=grib,
+                           externalid=ct_externalid)
             newterm.save()
             proposedterm = ProposedTerms(term=newterm, proposal=proposal)
             proposedterm.save()
-        else:    
+        else:
             # new version of the term to add with new name  
-            newterm = Term(name=name, description=description, unit=unit, unit_ref=unit_ref, amip=amip, grib=grib, externalid='')
+            newterm = Term(name=name, description=description, unit=unit, unit_ref=unit_ref, amip=amip, grib=grib,
+                           externalid='')
             newterm.save()
             proposedterm = ProposedTerms(term=newterm, proposal=proposal)
             proposedterm.save()
-        
+
     # phrase match
     current_term = proposal.current_term()
-    if current_term: phrases = current_term.phrases()
-    else: phrases = 'Not term to match yet!'     
+    if current_term:
+        phrases = current_term.phrases()
+    else:
+        phrases = 'Not term to match yet!'
 
-    context = {'proposal': proposal, 'currentterm':current_term, 'phrases': phrases, 'vocab': proposal.vocab_list,
+    context = {'proposal': proposal, 'currentterm': current_term, 'phrases': phrases, 'vocab': proposal.vocab_list,
                'proposed_terms': proposal.proposed_terms(), 'user': user}
     # security thing for post requests...
     context.update(csrf(request))
 
-    return render_to_response('vocab/proposal.html', context)  
+    return render_to_response('vocab/proposal.html', context)
+
 
 def viewproposal(request, id):
     if request.user.is_authenticated():
         user = request.user
     else:
         user = None
- 
+
     proposal = Proposal.objects.get(pk=id)
-    context = {'proposal': proposal, 'vocab':proposal.vocab_list, 'proposed_terms':proposal.proposed_terms() }
+    context = {'proposal': proposal, 'vocab': proposal.vocab_list, 'proposed_terms': proposal.proposed_terms()}
     # security thing for post requests...
     context.update(csrf(request))
 
-    return render_to_response('vocab/view_proposal.html', context )  
+    return render_to_response('vocab/view_proposal.html', context)
 
 
 def viewvocablist(request, id):
-    if request.user.is_authenticated(): user=request.user
-    else: user = None
- 
+    if request.user.is_authenticated():
+        user = request.user
+    else:
+        user = None
+
     vocab = VocabList.objects.get(pk=id)
 
     # update new terms
     newversion = request.GET.get('newversion', None)
     revert = request.GET.get('revert', None)
     confirm = request.GET.get('confirm', None)
-    if newversion and confirm: 
+    if newversion and confirm:
         vocab.new_version()
-    if revert and confirm: 
+    if revert and confirm:
         vocab.revert()
-                
-    context = {'vocab': vocab, 'newversion':newversion, 
-               'confirm':confirm, 'revert':revert, 'user':user }
+
+    context = {'vocab': vocab, 'newversion': newversion,
+               'confirm': confirm, 'revert': revert, 'user': user}
     # security thing for post requests...
     context.update(csrf(request))
 
-    return render_to_response('vocab/vocab.html', context)  
+    return render_to_response('vocab/vocab.html', context)
+
 
 def viewvocablistversion(request, id):
-    if request.user.is_authenticated(): user=request.user
-    else: user = None
+    if request.user.is_authenticated():
+        user = request.user
+    else:
+        user = None
 
     vocabversion = VocabListVersion.objects.get(pk=id)
     xml = request.GET.get('xml', None)
@@ -407,125 +434,103 @@ def viewvocablistversion(request, id):
     tsv = request.GET.get('tsv', None)
     units = request.GET.get('units', None)
     updateview = request.GET.get('updateview', None)
-    
-    terms =  vocabversion.terms.all().order_by('name')
+
+    terms = vocabversion.terms.all().order_by('name')
     for t in terms:
-        aliases = t.aliases()   
+        aliases = t.aliases()
 
     proposals = Proposal.objects.filter(vocab_list_version=vocabversion)
-      
-    context = {'vocabversion': vocabversion, 'terms':terms, 'user':user, 
-               'vocab':vocabversion.vocab_list, 'proposals':proposals}
+
+    context = {'vocabversion': vocabversion, 'terms': terms, 'user': user,
+               'vocab': vocabversion.vocab_list, 'proposals': proposals}
     # security thing for post requests...
     context.update(csrf(request))
 
     if xml:
-        response =  render_to_response('vocab/vocabversionxml.xml', context)
+        response = render_to_response('vocab/vocabversionxml.xml', context)
         response['Content-Type'] = 'application/data'
-        return response 
-    if skos: 
-        response =  render_to_response('vocab/vocabversionskosupdate.xml', context)
+        return response
+    if skos:
+        response = render_to_response('vocab/vocabversionskosupdate.xml', context)
         response['Content-Type'] = 'application/data'
-        return response 
+        return response
     if tsv:
         response = render_to_response('vocab/vocabversiontsvupdate.txt', context)
         response['Content-Type'] = 'text/plain'
         return response
     if units:
-        response =  render_to_response('vocab/vocabversionunitsupdate.txt', context)
+        response = render_to_response('vocab/vocabversionunitsupdate.txt', context)
         response['Content-Type'] = 'text/plain'
-        return response 
-    if updateview: return render_to_response('vocab/vocabversionupdate.html', context)
-    else:   return render_to_response('vocab/vocabversion.html', context)  
+        return response
+    if updateview:
+        return render_to_response('vocab/vocabversionupdate.html', context)
+    else:
+        return render_to_response('vocab/vocabversion.html', context)
+
 
 def updateemail(request, id):
-    if request.user.is_authenticated(): user=request.user
-    else: user = None
+    if request.user.is_authenticated():
+        user = request.user
+    else:
+        user = None
 
     vocabversion = VocabListVersion.objects.get(pk=id)
-    
-    terms =  vocabversion.terms.all().order_by('name')
+
+    terms = vocabversion.terms.all().order_by('name')
 
     proposals = Proposal.objects.filter(vocab_list_version=vocabversion)
-    
-    
+
     new, updated, contribs, aliases = [], [], [], []
     for p in proposals:
         proptype = p.updatetype()
         if p.proposer not in contribs: contribs.append(p.proposer)
 
-        if proptype == "New": 
-            new.append(p.current_term().name) 
-        elif proptype == "Updated": 
-            updated.append(p.current_term().name) 
-        elif proptype == "TermChange": 
+        if proptype == "New":
+            new.append(p.current_term().name)
+        elif proptype == "Updated":
+            updated.append(p.current_term().name)
+        elif proptype == "TermChange":
             updated.append(p.current_term().name)
             for a in p.current_term().aliases(): aliases.append(a)
-      
+
     new.sort()
-    updated.sort()  
-    context = {'vocabversion': vocabversion, 'proposals':proposals, 'new':new, 
-               'updated':updated, 'contrib':contribs, 
-               'aliases':aliases }
+    updated.sort()
+    context = {'vocabversion': vocabversion, 'proposals': proposals, 'new': new,
+               'updated': updated, 'contrib': contribs,
+               'aliases': aliases}
     # security thing for post requests...
     context.update(csrf(request))
 
-    response =  render_to_response('vocab/updateemail.txt', context)
+    response = render_to_response('vocab/updateemail.txt', context)
     response['Content-Type'] = 'text/plain'
-    return response 
+    return response
 
 
 def viewterm(request, id):
     term = Term.objects.get(pk=id)
-    context = {'term': term, }
-    return render_to_response('vocab/term.html', context)  
+    context = {'term': term,}
+    return render_to_response('vocab/term.html', context)
+
 
 def viewtermhistory(request, id):
     term = Term.objects.get(pk=id)
-    
-    hasaliasterms = []    
-    for a in term.aliases(): 
+
+    hasaliasterms = []
+    for a in term.aliases():
         aliasterms = Term.objects.filter(name=a.name)
-        for at in aliasterms: 
+        for at in aliasterms:
             if at not in hasaliasterms: hasaliasterms.append(at)
-    
+
     isaliasedterms = []
     for a in Alias.objects.filter(name=term.name):
-        if a.term not in isaliasedterms: 
+        if a.term not in isaliasedterms:
             isaliasedterms.append(a.term)
-        
-         
- 
-    context = {'term': term, 'hasaliasterms': hasaliasterms, 'isaliasedterms':isaliasedterms}
-    return render_to_response('vocab/termhistory.html', context)  
-    
+
+    context = {'term': term, 'hasaliasterms': hasaliasterms, 'isaliasedterms': isaliasedterms}
+    return render_to_response('vocab/termhistory.html', context)
+
+
 def viewphraselist(request):
     phrases = Phrase.objects.all().order_by('regex')
     context = {'phrases': phrases}
     return render_to_response('vocab/view_phrase_list.html', context)
-
-
-
-
-#def viewvocablistversiondiff(request, id):
-# 
-#    vocabversion = VocabListVersion.objects.get(pk=id)
-#    vocabversionprev = VocabListVersion.objects.filter(vocab_list=vocabversion.vocab_list, version=vocabversion.version-1)
-#    if len(vocabversionprev) == 0: vocabversionprev=None
-#    else: vocabversionprev= vocabversionprev[0]
-#
-#    newterms = []
-#    deletedterms = []
-#    changedterms = []
-#
-#    for t in vocabversion.terms.all():
-#    context = {'vocab': vocabversion, }
-#    # security thing for post requests...
-#    context.update(csrf(request))
-# 
-#    print xml
-#    if xml: return render_to_response('vocabversionxml.html', context)  
-#    else:   return render_to_response('vocabversion.html', context)  
-#
-
-
