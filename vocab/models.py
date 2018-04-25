@@ -3,12 +3,12 @@ from django.db import models
 import datetime
 import random
 import re
-import string
+from django.utils.safestring import mark_safe
 
 # make a convertion table for smart quotes etc.
-intab =  '\221\222\223\224\225\226\227\240'
-outtab = '\047\047\042\042\052\055\055\040'
-convert_smart_quotes_table = string.maketrans(intab, outtab)
+intab =  b'\221\222\223\224\225\226\227\240'
+outtab = b'\047\047\042\042\052\055\055\040'
+convert_smart_quotes_table = bytes.maketrans(intab, outtab)
 
 
 class Term(models.Model):
@@ -21,7 +21,7 @@ class Term(models.Model):
     amip = models.CharField(max_length=256, blank=True, default='', help_text="amip name/number for term")
     grib = models.CharField(max_length=256, blank=True, default='', help_text="Grib name/number for term")
 
-    def __unicode__(self):
+    def __str__(self):
         return "Term: %s" % (self.name,)
 
     def save(self, *args, **kwargs):
@@ -65,9 +65,8 @@ class Term(models.Model):
         out = ''
         for p in props:
             if p.proposer: out += '<a href="/proposal/%s/edit">%s (%s)</a> ' % (p.id,p.id,p.proposer)
-            else: out += '<a href="/proposal/%s/edit">%s</a></span> ' % (p.id,p.id)
-        return out
-    proposals_links.allow_tags=True
+            else: out += '<a href="/proposal/%s/edit">%s</a>' % (p.id,p.id)
+        return mark_safe(out)
 
     def vocab_list_versions(self):
         vlvs = VocabListVersion.objects.filter(terms=self)
@@ -88,7 +87,7 @@ class Alias(models.Model):
     name = models.CharField(max_length=1024, blank=True, default='', help_text="alias name")
     termname = models.CharField(max_length=1024, blank=True, default='', help_text="real term name")
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s -> %s" % (self.name, self.termname) 
 
     def externalid(self): 
@@ -149,7 +148,7 @@ class VocabList(models.Model):
         if len(lists) != 0: return lists[0]
         else: return None        
        
-    def __unicode__(self):
+    def __str__(self):
         return "%s" % (self.name,) 
 
 
@@ -168,7 +167,7 @@ class VocabListVersion(models.Model):
     # complete = ready for export
     terms = models.ManyToManyField(Term, blank=True)
     #aliases = models.ManyToManyField(Alias, blank=True)
-    vocab_list = models.ForeignKey(VocabList, blank=True, null=True,help_text="Vocab list for which this is a version")
+    vocab_list = models.ForeignKey(VocabList, on_delete=models.CASCADE, blank=True, null=True,help_text="Vocab list for which this is a version")
  
     def compile_accepted(self):
         accepted_proposals = Proposal.objects.filter(vocab_list=self.vocab_list, status='accepted')
@@ -193,7 +192,7 @@ class VocabListVersion(models.Model):
                 vlv_aliases.append(a)
         return vlv_aliases
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s (%s)" % (self.vocab_list, self.version) 
 
 class Proposal(models.Model):
@@ -214,14 +213,14 @@ class Proposal(models.Model):
                                     help_text="URL of Mailing list thread")
     mail_list_title = models.CharField(max_length=256, blank=True, default='', null=True,
                                        help_text="title of mailing list thread")
-    vocab_list = models.ForeignKey(VocabList, blank=True, null=True,
+    vocab_list = models.ForeignKey(VocabList, on_delete=models.CASCADE, blank=True, null=True,
                                    help_text="If the proposal is accepted the term will be added to a version of this list.")
-    vocab_list_version = models.ForeignKey(VocabListVersion, blank=True, null=True,
+    vocab_list_version = models.ForeignKey(VocabListVersion, on_delete=models.CASCADE, blank=True, null=True,
                                            help_text="After it was accepted the term was added to this version of the list.")
     terms = models.ManyToManyField(Term, blank=True, through='ProposedTerms')
     alias = models.BooleanField(default=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s [%s]" % (self.proposer, self.mail_list_title[0:40]) 
     
     def current_term(self):
@@ -427,23 +426,23 @@ class Proposal(models.Model):
                     term_on_list=True
                     break
             if not term_on_list: 
-                print "remove %s" % pt.term
+                print("remove %s" % pt.term)
                 pt.term.delete()
 
             # remove proposed terms links
-            print "remove %s" % pt
+            print("remove %s" % pt)
             pt.delete()  
             # remove proposal - self
-        print "remove %s" % self
+        print("remove %s" % self)
         self.delete()            
 
 
 class ProposedTerms(models.Model):
     change_date = models.DateTimeField(auto_now_add=True, help_text="Date the term was last changed.")
-    proposal = models.ForeignKey(Proposal, help_text="Link to Request that generated the term")
-    term = models.ForeignKey(Term, help_text="Link to the term")
+    proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE, help_text="Link to Request that generated the term")
+    term = models.ForeignKey(Term, on_delete=models.CASCADE, help_text="Link to the term")
 
-    def __unicode__(self):
+    def __str__(self):
         return "Proposed term: %s" % (self.term,)
 
 
@@ -453,7 +452,7 @@ class Phrase(models.Model):
     text = models.CharField(max_length=4096, blank=True, default='',
                             help_text="Text to replace in term description")
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s" % (self.text,)
 
     def save(self, *args, **kwargs):

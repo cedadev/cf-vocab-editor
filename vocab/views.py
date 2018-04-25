@@ -1,16 +1,16 @@
 from vocab.models import *
 from django.shortcuts import redirect, render_to_response, get_object_or_404, render
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.template.context_processors import csrf
 from datetime import datetime
-import urllib2, re
+import re, requests
 import csv
 
 
 def viewproposal_list(request, id):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user = request.user
     else:
         user = None
@@ -128,10 +128,10 @@ def newproposal(request, vocab_id):
 
     # if existing term then add that
     term = request.GET.get('term', None)
-    print term
+    print(term)
     if term:
         term = Term.objects.get(pk=term)
-        print term
+        print(term)
         proposedterm = ProposedTerms(term=term, proposal=proposal)
         proposedterm.save()
 
@@ -148,7 +148,7 @@ def bulkupload(request, vocab_id):
         upload = request.FILES['upload']
     else:
         return render_to_response('vocab/bulkupload_form.html', context)
-    print "+++", upload
+    print("+++", upload)
 
     # upload is deefined so run processing of upload
     reader = csv.reader(upload)
@@ -230,7 +230,7 @@ def bulkupload(request, vocab_id):
                 pt = ProposedTerms(proposal=p, term=t)
                 pt.save()
             except Exception as e:
-                print e
+                print(e)
                 message += "Error: Could not make term and/or proposal objects in db. %s\n" % termname
                 continue
 
@@ -273,7 +273,7 @@ def bulkupload_phrases(request):
             p = Phrase(regex=regex, text=text)
             p.save()
         except Exception as e:
-            print e
+            print(e)
             message += "Error: Could not make phrase objects in db. %s\n" % regex
             continue
 
@@ -292,7 +292,7 @@ def scrapproposal(request, proposal_id):
 
 
 def editproposal(request, id):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user = request.user
     else:
         user = None
@@ -314,8 +314,8 @@ def editproposal(request, id):
     # try and get title from mail list
     if mail_list_url and not mail_list_title:
         try:
-            f = urllib2.urlopen(mail_list_url)
-            page = f.read(500)
+            r = requests.get(mail_list_url)
+            page = r.raw.read(500)
             m = re.search('<TITLE>(.*)', page)
             title = m.group(1)
             mail_list_title = title.strip()
@@ -384,7 +384,7 @@ def editproposal(request, id):
 
 
 def viewproposal(request, id):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user = request.user
     else:
         user = None
@@ -398,7 +398,7 @@ def viewproposal(request, id):
 
 
 def viewvocablist(request, id):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user = request.user
     else:
         user = None
@@ -423,7 +423,7 @@ def viewvocablist(request, id):
 
 
 def viewvocablistversion(request, id):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user = request.user
     else:
         user = None
@@ -469,7 +469,7 @@ def viewvocablistversion(request, id):
 
 
 def updateemail(request, id):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user = request.user
     else:
         user = None
