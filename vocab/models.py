@@ -26,7 +26,7 @@ class Term(models.Model):
     def __str__(self):
         return "Term: %s" % (self.name,) 
 
-   def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
         # overload save to get ride of smart quotes
         if type(self.description) == str:
             self.description = self.description.translate(convert_smart_quotes_table)
