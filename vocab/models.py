@@ -8,7 +8,9 @@ from django.utils.safestring import mark_safe
 # make a convertion table for smart quotes etc.
 intab =  b'\221\222\223\224\225\226\227\240'
 outtab = b'\047\047\042\042\052\055\055\040'
+
 convert_smart_quotes_table = bytes.maketrans(intab, outtab)
+
 
 
 class Term(models.Model):
@@ -22,14 +24,14 @@ class Term(models.Model):
     grib = models.CharField(max_length=256, blank=True, default='', help_text="Grib name/number for term")
 
     def __str__(self):
-        return "Term: %s" % (self.name,)
+        return "Term: %s" % (self.name,) 
 
     def save(self, *args, **kwargs):
         # overload save to get ride of smart quotes
         if type(self.description) == str:
             self.description = self.description.translate(convert_smart_quotes_table)
         models.Model.save(self, *args, **kwargs)
-
+        
     def phrases(self):
         pp = []
         for p in Phrase.objects.all():
@@ -453,7 +455,7 @@ class Phrase(models.Model):
                             help_text="Text to replace in term description")
 
     def __str__(self):
-        return "%s" % (self.text,)
+        return "%s" % (self.text,) 
 
     def save(self, *args, **kwargs):
         # overload save to get ride of smart quotes
