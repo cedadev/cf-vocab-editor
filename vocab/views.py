@@ -499,7 +499,7 @@ def viewtermhistory(request, id):
         terms = Term.objects.filter(name=a.termname)
         for term in terms:
 	
-	    if term not in isaliasedterms:  isaliasedterms.append(term)
+            if term not in isaliasedterms:  isaliasedterms.append(term)
 #            isaliasedterms.append(a.termname)
         
          
