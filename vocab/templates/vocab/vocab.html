@@ -11,20 +11,20 @@
 <div class="row">
   <div class="span3">
   <img src="/static/img/hazard-stripes-texture.jpg">
-  <a class="btn btn-danger btn-large" href="/vocab/{{vocab.pk}}?newversion=1&confirm=1">Make New Version</a>
+  <a class="btn btn-danger btn-large" href="/admin/vocab/{{vocab.pk}}?newversion=1&confirm=1">Make New Version</a>
   <img src="/static/img/hazard-stripes-texture.jpg">
   </div>
   <div class="span4"><span class="label label-important">This makes a new list and adds any accepted proposals. It can take a few minutes.</span></div>
 </div>
-{% else %}<a class="btn btn-warning btn-large" href="/vocab/{{vocab.pk}}?newversion=1">Make New Version...</a>
+{% else %}<a class="btn btn-warning btn-large" href="/admin/vocab/{{vocab.pk}}?newversion=1">Make New Version...</a>
 {% endif %}
 
 <div class="row">
 <div class="span12">{% if confirm and revert %} reverted
 {% elif revert %}
-<a class="btn btn-danger btn-large" href="/vocab/{{vocab.pk}}?revert=1&confirm=1">Revert to previous</a>
+<a class="btn btn-danger btn-large" href="/admin/vocab/{{vocab.pk}}?revert=1&confirm=1">Revert to previous</a>
 <span class="label">Revert to previous version of list. It can take a few minutes.</span>
-{% else %}<a class="btn btn-warning btn-large" href="/vocab/{{vocab.pk}}?revert=1">Revert to previous...</a>
+{% else %}<a class="btn btn-warning btn-large" href="/admin/vocab/{{vocab.pk}}?revert=1">Revert to previous...</a>
 {% endif %}
 </div>
 </div>

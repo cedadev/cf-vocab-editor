@@ -63,7 +63,7 @@ $(function() {
 {% block navbar %}
     <ul class="nav">
 {%if user %}      
-      <li><a href="/vocab/{{vocab.pk}}"><i class="icon-home"></i>{{vocab}} page</a></li>
+      <li><a href="/admin/vocab/{{vocab.pk}}"><i class="icon-home"></i>{{vocab}} page</a></li>
       <li><a href="/vocabversion/{{vocab.latest_version.pk}}">Latest version: {{vocab.latest_version}}</a></li>
 {% endif %}
       <li><a href="/proposals/{{vocab.pk}}">Proposals</a></li>
