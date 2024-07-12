@@ -5,6 +5,7 @@ from django.template import RequestContext
 from django.template.context_processors import csrf
 from datetime import datetime
 from urllib.request import urlopen
+from django.http import HttpResponse
 import re
 import csv
 import io
@@ -286,9 +287,13 @@ def scrapproposal(request, proposal_id):
    
 
 def editproposal(request, id):
-    if request.user.is_authenticated: user=request.user
-    else: user = None
- 
+    if request.user.is_authenticated:
+        user=request.user
+    else:
+        user = None
+        html = "<html><body>You need to be logged in to see this page</body></html>"
+        return HttpResponse(html)
+	    
     proposal = Proposal.objects.get(pk=id)
     # update proposal info
     status= request.POST.get('status', None)
