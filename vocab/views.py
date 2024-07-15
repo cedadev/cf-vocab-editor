@@ -109,6 +109,13 @@ def viewproposal_list(request, id):
 
 
 def newproposal(request, vocab_id):
+
+
+    if request.user.is_authenticated:
+        user=request.user
+    else:
+        return render (request, 'vocab/access_denied.html')
+        
     vocab = VocabList.objects.get(pk=vocab_id)
     #flag proposal as a change to an existing term. This means it needs an alias
     # for the old term
@@ -130,6 +137,12 @@ def newproposal(request, vocab_id):
 
 
 def bulkupload(request, vocab_id):
+
+    if request.user.is_authenticated:
+        user=request.user
+    else:
+        return render (request, 'vocab/access_denied.html')
+
     vocab = VocabList.objects.get(pk=vocab_id)
     context = {'vocab': vocab}
     context.update(csrf(request))
@@ -235,6 +248,12 @@ def bulkupload(request, vocab_id):
     return render(request, 'vocab/bulkupload_output.txt', context=context, content_type='text/plain')
 
 def bulkupload_phrases(request):
+
+    if request.user.is_authenticated:
+        user=request.user
+    else:
+        return render (request, 'vocab/access_denied.html')
+        
     context = {}
     context.update(csrf(request))
 
@@ -278,6 +297,12 @@ def bulkupload_phrases(request):
     return render(request, 'vocab/bulkupload_output.txt', context=context, content_type='text/plain')
 
 def scrapproposal(request, proposal_id):
+
+    if request.user.is_authenticated:
+        user=request.user
+    else:
+        return render (request, 'vocab/access_denied.html')
+        
     proposal = Proposal.objects.get(pk=proposal_id)
     vocab = proposal.vocab_list
     if proposal.status == 'rejected' or proposal.status == 'new':
@@ -287,12 +312,11 @@ def scrapproposal(request, proposal_id):
    
 
 def editproposal(request, id):
+
     if request.user.is_authenticated:
         user=request.user
     else:
-        user = None
-        html = "<html><body>You need to be logged in to see this page</body></html>"
-        return HttpResponse(html)
+        return render (request, 'vocab/access_denied.html')
 	    
     proposal = Proposal.objects.get(pk=id)
     # update proposal info
@@ -449,9 +473,12 @@ def viewvocablistversion(request, id):
     else:   return render(request, 'vocab/vocabversion.html', context)  
 
 def updateemail(request, id):
-    if request.user.is_authenticated: user=request.user
-    else: user = None
 
+    if request.user.is_authenticated:
+        user=request.user
+    else:
+        return render (request, 'vocab/access_denied.html')
+        
     vocabversion = VocabListVersion.objects.get(pk=id)
     
     terms =  vocabversion.terms.all().order_by('name')
