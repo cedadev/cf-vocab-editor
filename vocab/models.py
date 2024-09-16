@@ -2,6 +2,7 @@
 import datetime
 import random
 import re
+import requests
 from django.db import models
 from django.utils.safestring import mark_safe
 
@@ -13,21 +14,26 @@ convert_smart_quotes_table = bytes.maketrans(intab, outtab)
 
 
 class Term(models.Model):
-    # the vocab term. 
-    externalid = models.CharField(max_length=256, blank=True, default='', help_text="machine readable id")
+    """the vocab term. """
+    externalid = models.CharField(max_length=256, blank=True, default='',
+                                  help_text="machine readable id")
     name = models.CharField(max_length=1024, blank=True, default='', help_text="term text")
-    description = models.CharField(max_length=4096, blank=True, default='', help_text="description of term")
+    description = models.CharField(max_length=4096, blank=True, default='',
+                                   help_text="description of term")
     unit = models.CharField(max_length=256, blank=True, default='', help_text="unit")
-    unit_ref = models.CharField(max_length=256, blank=True, default='', help_text="reference for unit")
-    amip = models.CharField(max_length=256, blank=True, default='', help_text="amip name/number for term")
-    grib = models.CharField(max_length=256, blank=True, default='', help_text="Grib name/number for term")
+    unit_ref = models.CharField(max_length=256, blank=True, default='',
+                                help_text="reference for unit")
+    amip = models.CharField(max_length=256, blank=True, default='',
+                            help_text="amip name/number for term")
+    grib = models.CharField(max_length=256, blank=True, default='',
+                            help_text="Grib name/number for term")
 
     def __str__(self):
-        return "Term: %s" % (self.name,) 
+        return f"Term: {self.name}"
 
     def save(self, *args, **kwargs):
         # overload save to get ride of smart quotes
-        if type(self.description) == str:
+        if isinstance(self.description, str):
             self.description = self.description.translate(convert_smart_quotes_table)
         models.Model.save(self, *args, **kwargs)
         
@@ -39,24 +45,21 @@ class Term(models.Model):
         return ' '.join(pp)    
     
     # Generate a new id for term
-    def generate_term_id(self):    
+    def generate_term_id(self):
+        """Generate a random 8 character id."""
         chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
-        pid = ''
-        cnt = 0
-        while cnt < 8:
-            pid += random.choice(chars)
-            cnt += 1         
-        return pid
+        picked_chars = random.choices(chars, k=8)
+        return "".join(picked_chars)
 
     def gen_externalid(self):
-        for i in range(100):
+        """Add a random external id makeing sure it does not already exist in the list."""
+        pid = self.generate_term_id()
+        while Term.objects.filter(externalid=pid).exists():
             pid = self.generate_term_id()
-            matchs = Term.objects.filter(externalid=pid)         
-            if len(matchs) == 0:
-                self.externalid = pid
-                self.save()
-                return 
-           
+        self.externalid = pid
+        self.save()
+        return
+
     def proposals(self):
         """Return a list of proposals that have contain this term."""
         props = Proposal.objects.filter(terms=self)
@@ -73,10 +76,6 @@ class Term(models.Model):
     def vocab_list_versions(self):
         vlvs = VocabListVersion.objects.filter(terms=self)
         return vlvs
-
-    def with_same_name(self):
-        terms = Term.objects.filter(name=self.name)
-        return terms
 
     def aliases(self):
         aliases = Alias.objects.filter(termname=self.name)
@@ -421,6 +420,28 @@ class Proposal(models.Model):
             # remove proposal - self
         print("remove %s" % self)
         self.delete()            
+
+    def grab_github_issue_info(self):
+        if not self.mail_list_url:
+            return 
+        if self.mail_list_title and self.proposed_date and self.proposer:
+            return
+        
+        m = re.match(r'https://github.com/cf-convention/vocabularies/issues/(\d+)', self.mail_list_url)
+        if not m:
+            return
+        
+        issue_number = m.group(1)
+        api_url = f"https://api.github.com/repos/cf-convention/vocabularies/issues/{issue_number}"
+        r = requests.get(url=api_url, timeout=10)
+        issue_json = r.json()
+        if not self.mail_list_title:
+            self.mail_list_title = issue_json['title']
+        if not self.proposer:
+            self.proposer = issue_json['user']['login']
+        if not self.proposed_date:
+            self.proposed_date = datetime.datetime.fromisoformat(issue_json['created_at'])
+        self.save()
 
 
 class ProposedTerms(models.Model):

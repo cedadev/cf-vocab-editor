@@ -349,11 +349,10 @@ def editproposal(request, id):
     # find current term
     current_term = proposal.current_term()
     if current_term:
-        (ct_name, ct_desc, ct_unit, ct_unit_ref, ct_amip, ct_grib, ct_externalid) = (current_term.name,
-            current_term.description, current_term.unit, current_term.unit_ref, current_term.amip, 
-            current_term.grib, current_term.externalid)
+        (ct_name, ct_desc, ct_unit, ct_unit_ref, ct_externalid) = (current_term.name,
+            current_term.description, current_term.unit, current_term.unit_ref, current_term.externalid)
     else:
-        (ct_name, ct_desc, ct_unit, ct_unit_ref, ct_amip, ct_grib, ct_externalid) = ('', '', '', '', '', '', '')
+        (ct_name, ct_desc, ct_unit, ct_unit_ref, ct_externalid) = ('', '', '', '', '')
 
     # update new terms
     name = request.POST.get('name', None)
@@ -363,21 +362,20 @@ def editproposal(request, id):
     unit = request.POST.get('unit', None)
     if unit: unit=unit.strip()
     unit_ref = request.POST.get('unitref', None)
-    amip = request.POST.get('amip', None)
-    grib = request.POST.get('grib', None)
+
     if name: # if name is blank then don't make a new term
-        if name==ct_name and description==ct_desc and unit==ct_unit and unit_ref==ct_unit_ref and amip==ct_amip and grib==ct_grib:
+        if name==ct_name and description==ct_desc and unit==ct_unit and unit_ref==ct_unit_ref:
             # term is identical to exiting current term don't add another.
             pass
         elif name == ct_name:
             # if the term name has not changed then maintain the external id.
-            newterm = Term(name=name, description=description, unit=unit, unit_ref=unit_ref, amip=amip, grib=grib, externalid=ct_externalid)
+            newterm = Term(name=name, description=description, unit=unit, unit_ref=unit_ref, externalid=ct_externalid)
             newterm.save()
             proposedterm = ProposedTerms(term=newterm, proposal=proposal)
             proposedterm.save()
         else:    
             # new version of the term to add with new name  
-            newterm = Term(name=name, description=description, unit=unit, unit_ref=unit_ref, amip=amip, grib=grib, externalid='')
+            newterm = Term(name=name, description=description, unit=unit, unit_ref=unit_ref, externalid='')
             newterm.save()
             proposedterm = ProposedTerms(term=newterm, proposal=proposal)
             proposedterm.save()
@@ -544,3 +542,15 @@ def viewphraselist(request):
 
 def health(request):
     return render(request, 'vocab/health.html')
+
+
+def grab_proposal_info(request, prop_id):
+    if request.user.is_authenticated:
+        user = request.user
+    else:
+        user = None
+ 
+    proposal = Proposal.objects.get(pk=prop_id)
+    proposal.grab_github_issue_info()
+
+    return redirect('/proposal/%s/edit' % proposal.pk)
