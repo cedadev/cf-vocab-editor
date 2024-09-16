@@ -1,8 +1,8 @@
-from django.db import models
 
 import datetime
 import random
 import re
+from django.db import models
 from django.utils.safestring import mark_safe
 
 # make a convertion table for smart quotes etc.
@@ -10,7 +10,6 @@ intab =  b'\221\222\223\224\225\226\227\240'
 outtab = b'\047\047\042\042\052\055\055\040'
 
 convert_smart_quotes_table = bytes.maketrans(intab, outtab)
-
 
 
 class Term(models.Model):
@@ -59,6 +58,7 @@ class Term(models.Model):
                 return 
            
     def proposals(self):
+        """Return a list of proposals that have contain this term."""
         props = Proposal.objects.filter(terms=self)
         return props
 
@@ -307,70 +307,54 @@ class Proposal(models.Model):
         # old term with a change in the term name
         else: return "TermChange"          
 
+    def html_for_list(self):
+        return render("proposal_row.html")
+
+
+    @staticmethod
+    def skos_concept_string(term, change_note):
+        """String for skos representation of term change."""
+        return f"""<skos:Concept><skos:externalID>{term.externalid}</skos:externalID>
+             <skos:prefLabel>{term.name}</skos:prefLabel><skos:altLabel>null</skos:altLabel>
+             <skos:definition>{term.description}</skos:definition><skos:changeNote>{change_note}</skos:changeNote>
+             <date xmlns="http://purl.org/dc/elements/1.1/">{datetime.date.today().isoformat()}</date>
+             </skos:Concept>"""
+
+    @staticmethod
+    def tsv_update_string(term, change_note):
+        """String for tab seperated value representation of term change."""
+        return f"{term.externalid}\t{term.name}\t\t{term.description}\t{change_note}\n"
 
     def skosupdate(self):
-        # make update skos for NERC vocab server.
-        current_term = self.current_term()
-        first_term = self.first_term()
-        term_name_change = (first_term.name != current_term.name)
-        version = self.vocab_list_version
-
-        # new record
-        if not self.alias: 
-            return """<skos:Concept><skos:externalID>%s</skos:externalID>
-             <skos:prefLabel>%s</skos:prefLabel><skos:altLabel>null</skos:altLabel>
-             <skos:definition>%s</skos:definition><skos:changeNote>I</skos:changeNote>
-             <date xmlns="http://purl.org/dc/elements/1.1/">%s</date>
-             </skos:Concept>""" %(current_term.externalid, current_term.name,
-                                  current_term.description, datetime.date.today().isoformat())
-
-        # old term with no change in term name
-        elif not term_name_change:
-            return """<skos:Concept><skos:externalID>%s</skos:externalID>
-             <skos:prefLabel>%s</skos:prefLabel><skos:altLabel>null</skos:altLabel>
-             <skos:definition>%s</skos:definition><skos:changeNote>M</skos:changeNote>
-             <date xmlns="http://purl.org/dc/elements/1.1/">%s</date>
-             </skos:Concept>""" %(current_term.externalid, current_term.name,
-                                  current_term.description, datetime.date.today().isoformat())
- 
-        # old term with a change in the term name
-        elif self.alias and term_name_change: 
-            return """<skos:Concept><skos:externalID>%s</skos:externalID>
-             <skos:prefLabel>%s</skos:prefLabel><skos:altLabel>null</skos:altLabel>
-             <skos:definition>%s</skos:definition><skos:changeNote>D</skos:changeNote>
-             <date xmlns="http://purl.org/dc/elements/1.1/">%s</date>
-             </skos:Concept>
-             <skos:Concept><skos:externalID>%s</skos:externalID>
-             <skos:prefLabel>%s</skos:prefLabel><skos:altLabel>null</skos:altLabel>
-             <skos:definition>%s</skos:definition><skos:changeNote>I</skos:changeNote>
-             <date xmlns="http://purl.org/dc/elements/1.1/">%s</date>
-             </skos:Concept>""" %(first_term.externalid, first_term.name,
-                                  first_term.description, datetime.date.today().isoformat(),
-                                  current_term.externalid,
-                                  current_term.name, current_term.description, datetime.date.today().isoformat())
+        """return update strig as skos"""
+        return self.update_string("skos")
 
     def tsvupdate(self):
-        # make update tsv for NERC vocab server.
+        """return update strig as tab seperated values"""
+        return self.update_string("tsv")
+
+    def update_string(self, update_type):
+        """make update skos for NERC vocab server."""
         current_term = self.current_term()
         first_term = self.first_term()
-        term_name_change = (first_term.name != current_term.name)
-        version = self.vocab_list_version
+        term_name_change = first_term.name != current_term.name
+
+        if update_type == "skos":
+            update_string_function = self.skos_concept_string
+        elif update_type == "tsv":
+            update_string_function = self.tsv_update_string
 
         # new record
         if not self.alias:
-            return "%s\t%s\t\t%s\tI\n" %(current_term.externalid, current_term.name,
-                                         current_term.description)
+            return update_string_function(current_term, "I")
 
         # old term with no change in term name
-        elif not term_name_change:
-            return "%s\t%s\t\t%s\tM\n" % (current_term.externalid, current_term.name,
-                                          current_term.description)
+        if not term_name_change:
+            return update_string_function(current_term, "M")
 
         # old term with a change in the term name
-        elif self.alias and term_name_change:
-            return "%s\t%s\t\t%s\tD\n%s\t%s\t\t%s\tI\n" %(first_term.externalid, first_term.name,
-                                                        first_term.description, current_term.externalid,
-                                                        current_term.name, current_term.description)
+        if self.alias and term_name_change: 
+            return update_string_function(first_term, "D") + update_string_function(current_term, "I")
 
     def csv_mapping_update(self):
         current_term = self.current_term()

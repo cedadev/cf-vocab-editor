@@ -4,7 +4,7 @@
 {% block main %}
 
 
-<form method="post" action="/bulkupload_phrases" enctype="multipart/form-data">{% csrf_token %}
+
 
 <h1>Bulk upload phrases</h1>
     <p>This form is used to bulk upload phrases from a CSV file. There are two columns in the CSV file: phrase
@@ -18,8 +18,13 @@ beef,Beef is meat from a cow
 </pre>
 
 <div class="row">
-      <div class="span6">CSV file <input type="file" name="upload"></div>
-      <div class="span6"><input class="btn btn-danger" type="submit" value="Upload phrases"></div>
+    <form method="post" action="/bulkupload_phrases" enctype="multipart/form-data">{% csrf_token %}
+      <div class="col">
+        <label for="formFile" class="form-label">CSV file</label> 
+        <input class="form-control m-1" type="file" id="formFile" name="upload">
+        <input class="btn btn-danger m-1" type="submit" value="Upload phrases"></div>
+
+    </form>
 </div>
 
 </form>

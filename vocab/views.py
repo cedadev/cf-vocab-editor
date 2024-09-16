@@ -308,8 +308,7 @@ def scrapproposal(request, proposal_id):
     if proposal.status == 'rejected' or proposal.status == 'new':
         proposal.scrap()
     return redirect('/proposals/%s' % vocab.pk)
-    
-   
+
 
 def editproposal(request, id):
 
@@ -534,8 +533,6 @@ def viewtermhistory(request, id):
             if term not in isaliasedterms:  isaliasedterms.append(term)
 #            isaliasedterms.append(a.termname)
         
-         
- 
     context = {'term': term, 'hasaliasterms': hasaliasterms, 'isaliasedterms':isaliasedterms}
     return render(request, 'vocab/termhistory.html', context)  
     
@@ -547,27 +544,3 @@ def viewphraselist(request):
 
 def health(request):
     return render(request, 'vocab/health.html')
-
-
-#def viewvocablistversiondiff(request, id):
-# 
-#    vocabversion = VocabListVersion.objects.get(pk=id)
-#    vocabversionprev = VocabListVersion.objects.filter(vocab_list=vocabversion.vocab_list, version=vocabversion.version-1)
-#    if len(vocabversionprev) == 0: vocabversionprev=None
-#    else: vocabversionprev= vocabversionprev[0]
-#
-#    newterms = []
-#    deletedterms = []
-#    changedterms = []
-#
-#    for t in vocabversion.terms.all():
-#    context = {'vocab': vocabversion, }
-#    # security thing for post requests...
-#    context.update(csrf(request))
-# 
-#    print xml
-#    if xml: return render_to_response('vocabversionxml.html', context)  
-#    else:   return render_to_response('vocabversion.html', context)  
-#
-
-

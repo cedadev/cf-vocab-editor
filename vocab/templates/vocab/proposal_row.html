@@ -1,0 +1,27 @@
+
+
+<div class="row">
+    <div class="col-12 prop prop-{{p.status}}"><h3>{{p.current_term.name|default:"No term set!"}}</h3> {{p.status}}</div>
+  </div>
+  <div class="row">
+    <div class="col-4">{% if user %}
+                          {% if p.status != 'complete' %}<a class="btn btn-danger" href="/proposal/{{p.id}}/edit">Edit</a>
+                       {% else %}<a class="btn btn-warning" href="/proposal/{{p.id}}">View</a>{%endif%}
+                            {% else %}<a class="btn btn-warning" href="/proposal/{{p.id}}">View</a>{% endif %}</div>
+    <div class="col-4">Proposer: {{p.proposer}}</div>
+    <div class="col-4">Proposed Date: {{p.proposed_date}}</div>
+  </div>
+  <div class="row">
+    <div class="col-12">Comments: {{p.comment}}</div>
+  </div>
+  <div class="row">
+    <div class="col-6">CF mailing list link: <a href="{{p.mail_list_url}}">{{p.mail_list_title}}</a></div>
+    <div class="col-4">Units: {{p.current_term.unit}}  {% if p.current_term.unit_ref %}({{p.current_term.unit_ref}}){% endif %}</div>
+    <div class="col-2">{% if p.updatetype == 'New' %}<span class="label label-success">New Term</span>
+                       {% elif p.updatetype == 'Updated' %}<span class="label label-info">Updated term description</span>
+                       {% else%}<span class="label label-warning">Term change from {{p.first_term}}</span>{% endif %}</div>
+  </div>
+  
+  <div class="row">
+    <div class="col-12">{{p.current_term.description}}</div>
+  </div>
