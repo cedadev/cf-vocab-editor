@@ -1,8 +1,9 @@
 
-from django.urls import re_path 
+from django.urls import re_path, path
 from vocab.views import *
 from django.contrib import admin
 from django.views.generic.base import RedirectView
+
 
 urlpatterns = [
      re_path(r'^admin/vocab/(?P<id>\d+)$', viewvocablist),
@@ -21,8 +22,7 @@ urlpatterns = [
      re_path(r'^phraselist/$', viewphraselist),
      re_path(r'^bulkupload_phrases', bulkupload_phrases),
      re_path(r'^health/$', health),     
-     re_path(r'^$', RedirectView.as_view(url='/proposals/1', permanent=True), name='index')
-	      
+     re_path(r'^$', RedirectView.as_view(url='/proposals/1', permanent=True), name='index'),     
 	      
 	       ]
 

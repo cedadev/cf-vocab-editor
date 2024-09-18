@@ -38,14 +38,6 @@
 </div>
 
 <div class="row">
-      <div class="col-12"><div class="form-floating">
-            <textarea class="form-control m-1" name="comment" id="comments_field" rows="6">{{proposal.comment}}</textarea>
-      <label for="comments_field">Comments</label>
-      </div></div>
-</div>
-
-
-<div class="row">
       <div class="col-4"><div class="form-floating m-2">
             <input type="text" class="form-control" id="mail_list_url_field" value="{{proposal.mail_list_url}}" name="mail_list_url">
             <label for="mail_list_url_field">Thread URL:</label>
@@ -54,8 +46,14 @@
             <input type="text" class="form-control" id="mail_list_title_field" value="{{proposal.mail_list_title}}" name="mail_list_title">
             <label for="mail_list_title_field">Thread title:</label>
       </div></div>
-      <div class="col-4"><a class="btn btn-primary m-2" href="{{proposal.mail_list_url}}">Goto Thread</a></div>
-      <div class="col-4"><a class="btn btn-primary m-2" href="/proposal/{{proposal.id}}/grab">grab info</a></div>
+      <div class="col-4">{% if proposal.mail_list_url %}<a class="btn btn-primary m-2" href="{{proposal.mail_list_url}}">Goto Thread</a>{% endif %}</div>
+</div>
+
+<div class="row">
+      <div class="col-12"><div class="form-floating">
+            <textarea class="form-control m-1" name="comment" id="comments_field" rows="6">{{proposal.comment}}</textarea>
+      <label for="comments_field">Comments</label>
+      </div></div>
 </div>
 
 <div class="row">
@@ -76,30 +74,34 @@
             </div>
             <div class="row"> <div class="col-12">{{pt.description}}</div></div>
       </div>
-      </div>
-
 </div>
 {%endfor%}
       
  <div class="row">
-   		<div class="span4">Term: <input type="text" name="name" value="{{currentterm.name}}"></div>
-   		<div class="span4">unit: <input type="text" name="unit" value="{{currentterm.unit}}"></div>
+   		<div class="col-4">Term: <input type="text" name="name" value="{{currentterm.name}}"></div>
+   		<div class="col-4">unit: <input type="text" name="unit" value="{{currentterm.unit}}"></div>
  </div>
  <div class="row">
-  		<div class="span4">Unit ref: <input type="text" name="unitref" value="{{currentterm.unit_ref}}"></div>
+  		<div class="col-4">Unit ref: <input type="text" name="unitref" value="{{currentterm.unit_ref}}"></div>
  </div>
  <div class="row">
-   		<div class="span10"><textarea name="description" width="90" rows="8" class="input-xxlarge">{{currentterm.description}}</textarea></div>
- </div>
+      <div class="col-6"><textarea name="description" width="90" rows="8" class="form-control m-1">{{currentterm.description}}</textarea></div>
+      <div class="col-6">
+            <h4>Suggested phrases</h4>
+            <pre>{{phrases}}</pre>
+            <div><a href="/admin/vocab/phrase/add/" class="btn btn-primary mx-1">Add phrases</a></div>
+      </div>
+      
+</div>
 <div class="row">
-      <div class="span8"><input type="submit" value="Update proposal"></div>
+      <div class="col-8"><input type="submit" value="Update proposal"></div>
 </div>
 </form>
 
 <div>
-{%if proposal.status == 'new' %}<a class="btn btn-danger" href="/scrapproposal/{{proposal.id}}">Scrap proposal</a> {%endif%}
-{%if proposal.status == 'rejected' %}<a class="btn btn-danger" href="/scrapproposal/{{proposal.id}}">Scrap proposal</a> {%endif%} 
-<a class="btn btn-primary" href="/newproposal/{{vocab.pk}}">Make new proposal</a></div><p> </p>
-<span class="label label-info">Phrases</span>{{phrases}}
+{%if proposal.status == 'new' %}<a class="btn btn-danger m-3" href="/scrapproposal/{{proposal.id}}">Scrap proposal</a> {%endif%}
+{%if proposal.status == 'rejected' %}<a class="btn btn-danger m-3" href="/scrapproposal/{{proposal.id}}">Scrap proposal</a> {%endif%} 
+<a class="btn btn-primary m-3" href="/newproposal/{{vocab.pk}}">Make new proposal</a></div><p> </p>
+
 {% endblock %}
 

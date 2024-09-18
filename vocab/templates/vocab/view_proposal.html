@@ -17,25 +17,25 @@
       <div class="col-8"><a href="{{proposal.mail_list_url}}">{{proposal.mail_list_title}}</a></div>
 </div>
 
-
+<div class="row">
 {% for pt, date in proposed_terms %}      
-<div class="well">
+<div class="container">
  <div class="row">
   		<div class="col-12 muted">Change Date: {{date}}</div>
  </div>
  <div class="row">
-   		<div class="col-8">Term: <b>{{pt.name}}</b></div>
-   		<div class="col-3">Unit: {{pt.unit}}</div>
+   		<div class="col-12">Term: <b>{{pt.name}}</b></div>
  </div>
  <div class="row">
-   		<div class="col-8">Unit ref: {{pt.unit_ref}}</div>
+		<div class="col-4">Unit: {{pt.unit}}</div>
+		<div class="col-8">Unit ref: {{pt.unit_ref}}</div>
  </div>
  <div class="row">
-   		<div class="col-8">{{pt.description}}</div>
+   		<div class="col-12">{{pt.description}}</div>
  </div>
 </div>
 {%endfor%}
-      
+</div>
 
 
 {% endblock %}

@@ -225,11 +225,12 @@ class Proposal(models.Model):
         return "%s [%s]" % (self.proposer, self.mail_list_title[0:40]) 
     
     def current_term(self):
-        if len(self.terms.all())==0: return None
-        else: 
-            pt = ProposedTerms.objects.filter(proposal=self).order_by('-change_date')[0]
+        pt = ProposedTerms.objects.filter(proposal=self).order_by("change_date").last()
+        if pt is None: 
+            return None
+        else:
             return pt.term
-
+        
     def first_term(self):
         if len(self.terms.all())==0: return None
         else: 
@@ -291,12 +292,13 @@ class Proposal(models.Model):
     def updatetype(self):
         current_term = self.current_term()
         first_term = self.first_term()
-        if first_term == None: return "New"
-        term_name_change = (first_term.name != current_term.name)
+        if first_term is None:
+            return "New"
+        term_name_change = first_term.name != current_term.name
 
-        # 3 posibilies: 
+        # 3 posibilies:
         #    1) new - current term not on the list and alias flag on proposal set to false.
-        #    2) updated - its an old term, but the term name has not changed. 
+        #    2) updated - its an old term, but the term name has not changed.
         #    3) term change - its an old term and the term name has changed.
 
         # new record
@@ -435,12 +437,20 @@ class Proposal(models.Model):
         api_url = f"https://api.github.com/repos/cf-convention/vocabularies/issues/{issue_number}"
         r = requests.get(url=api_url, timeout=10)
         issue_json = r.json()
+        print(issue_json)
         if not self.mail_list_title:
             self.mail_list_title = issue_json['title']
         if not self.proposer:
-            self.proposer = issue_json['user']['login']
+            user_info = requests.get(url=issue_json['user']['url'], timeout=10)
+            if user_info.json()['name']:
+                self.proposer = user_info.json()['name']
+            else:
+                self.proposer = user_info.json()['login']
+            
         if not self.proposed_date:
             self.proposed_date = datetime.datetime.fromisoformat(issue_json['created_at'])
+
+        print(self, self.proposer)
         self.save()
 
 

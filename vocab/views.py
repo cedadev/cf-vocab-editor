@@ -1,3 +1,7 @@
+import re
+import csv
+import io
+
 from vocab.models import *
 from django.shortcuts import redirect, render, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
@@ -6,9 +10,7 @@ from django.template.context_processors import csrf
 from datetime import datetime
 from urllib.request import urlopen
 from django.http import HttpResponse
-import re
-import csv
-import io
+
 
 def viewproposal_list(request, id):
     if request.user.is_authenticated: user=request.user
@@ -319,32 +321,18 @@ def editproposal(request, id):
 	    
     proposal = Proposal.objects.get(pk=id)
     # update proposal info
-    status= request.POST.get('status', None)
-    proposer = request.POST.get('proposer', None)
-    proposed_date = request.POST.get('proposed_date', None)
-    comment = request.POST.get('comment', None)
-    mail_list_url = request.POST.get('mail_list_url', None)
-    mail_list_title = request.POST.get('mail_list_title', None) 
+    proposal.status = request.POST.get('status', 'new')
+    proposal.proposer = request.POST.get('proposer', '').strip()
+    proposed_date = request.POST.get('proposed_date', '')
+    proposal.comment = request.POST.get('comment', '').strip()
+    proposal.mail_list_url = request.POST.get('mail_list_url', '').strip()
+    proposal.mail_list_title  = request.POST.get('mail_list_title', '').strip()
 
-    if status: proposal.status = status
-    if proposer: proposal.proposer = proposer.strip()
-    if proposed_date: proposal.proposed_date = datetime.strptime(proposed_date, "%Y-%m-%d")
-    if comment != None: proposal.comment = comment
-
-    #try and get title from mail list 
-    if mail_list_url and not mail_list_title:
-        try: 
-            f = urlopen(mail_list_url)
-            page = f.read(500)
-            m = re.search('<TITLE>(.*)', page)
-            title = m.group(1)
-            mail_list_title = title.strip()
-        except:
-            pass
-  
-    if mail_list_url: proposal.mail_list_url = mail_list_url.strip()
-    if mail_list_title: proposal.mail_list_title = mail_list_title.strip()
     proposal.save()
+    proposal.grab_github_issue_info()
+
+    if proposed_date: 
+        proposal.proposed_date = datetime.strptime(proposed_date, "%Y-%m-%d")
 
     # find current term
     current_term = proposal.current_term()
@@ -356,11 +344,14 @@ def editproposal(request, id):
 
     # update new terms
     name = request.POST.get('name', None)
-    if name: name = name.strip()
+    if name:
+        name = name.strip()
     description = request.POST.get('description', None)
-    if description: description = description.strip()
+    if description:
+        description = description.strip()
     unit = request.POST.get('unit', None)
-    if unit: unit=unit.strip()
+    if unit:
+        unit=unit.strip()
     unit_ref = request.POST.get('unitref', None)
 
     if name: # if name is blank then don't make a new term
@@ -554,3 +545,4 @@ def grab_proposal_info(request, prop_id):
     proposal.grab_github_issue_info()
 
     return redirect('/proposal/%s/edit' % proposal.pk)
+
