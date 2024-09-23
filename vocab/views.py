@@ -28,16 +28,51 @@ def viewproposal_list(request, id):
     vocab = VocabList.objects.get(pk=id)
     proposals = Proposal.objects.filter(vocab_list=vocab)
 
-    if status == 'accepted': proposals = proposals.filter(status='accepted')
-    elif status == 'complete': proposals = proposals.filter(status='complete')
-    elif status == 'rejected': proposals = proposals.filter(status='rejected')
-    elif status == 'new': proposals = proposals.filter(status='new')
-    elif status == 'under discussion': proposals = proposals.filter(status='under discussion')
-    elif status == 'all': pass
-    elif status == 'inactive': proposals = proposals.exclude(status='new').exclude(status='under discussion').exclude(status='accepted')
-    else: proposals = proposals.exclude(status='complete').exclude(status='rejected')
+    if status == 'accepted':
+        proposals = proposals.filter(status='accepted')
+    elif status == 'complete':
+        proposals = proposals.filter(status='complete')
+    elif status == 'rejected':
+        proposals = proposals.filter(status='rejected')
+    elif status == 'new':
+        proposals = proposals.filter(status='new')
+    elif status == 'under discussion':
+        proposals = proposals.filter(status='under discussion')
+    elif status == 'all':
+        pass
+    elif status == 'inactive':
+        proposals = proposals.filter(status__in=('complete', 'rejected'))
+    else: 
+        proposals = proposals.filter(status__in=('accepted', 'new', 'under discussion'))
+
+    
+    # filter by proposer name
+    if proposerfilter:
+        proposals = proposals.filter(proposer__icontains=proposerfilter)
+
+    # filter by description
+    if descfilter:
+        proposals = proposals.filter(description__icontains=descfilter)
+
+    # filter by comment
+    if commentfilter:
+        proposals = proposals.filter(comment__icontains=commentfilter)
+
+   # filter by proposal date
+    if yearfilter:
+        start = datetime(int(yearfilter), 1, 1)
+        end = datetime(int(yearfilter)+1, 1, 1)
+        proposals = proposals.filter(proposed_date__lt=end, proposed_date__gt=start)
 
     proposals = proposals.order_by('-created', 'mail_list_title')
+
+    # filter by unit
+    if unitfilter:
+        filtered = []
+        for p in proposals:
+            if p.current_term():
+                if p.current_term().unit.find(unitfilter) != -1: filtered.append(p)
+        proposals = filtered
 
     # filter by term name
     if namefilter:
@@ -50,58 +85,6 @@ def viewproposal_list(request, id):
                         filtered.append(p)
                         break
         proposals = filtered
-    
-    # filter by proposer name
-    if proposerfilter:
-        proposerfilters = proposerfilter.split()
-        filtered = []
-        for p in proposals:
-            if p.proposer:
-                for pf in proposerfilters:
-                    if p.proposer.lower().find(pf.lower()) != -1: 
-                        filtered.append(p)
-                        break
-        proposals = filtered
-
-    # filter by description
-    if descfilter:
-        descfilters = descfilter.split()
-        filtered = []
-        for p in proposals:
-            if p.current_term():
-                for df in descfilters:
-                    if p.current_term().description.lower().find(df.lower()) != -1: 
-                        filtered.append(p)
-                        break
-        proposals = filtered
-
-    # filter by comment
-    if commentfilter:
-        commentfilters = commentfilter.split()
-        filtered = []
-        for p in proposals:
-            if p.comment:
-                for cf in commentfilters:
-                    if p.comment.lower().find(cf.lower()) != -1:
-                        filtered.append(p)
-                        break
-        proposals = filtered
-
-   # filter by unit
-    if unitfilter:
-        filtered = []
-        for p in proposals:
-            if p.current_term():
-                if p.current_term().unit.find(unitfilter) != -1: filtered.append(p)
-        proposals = filtered
-
-   # filter by proposal date
-    if yearfilter:
-        filtered = []
-        for p in proposals:
-            if p.proposed_date:
-                if "%s" % p.proposed_date.year == yearfilter: filtered.append(p)
-        proposals = filtered
 
     context = {'proposals': proposals, 'vocab': vocab, 'user':user, 'status':status, 
                'mailupdate':mailupdate, 'namefilter':namefilter, 'proposerfilter':proposerfilter,
@@ -109,9 +92,8 @@ def viewproposal_list(request, id):
     return render(request, 'vocab/view_proposal_list.html', context)  
 
 
-
+@login_required
 def newproposal(request, vocab_id):
-
 
     if request.user.is_authenticated:
         user=request.user
@@ -534,15 +516,4 @@ def viewphraselist(request):
 def health(request):
     return render(request, 'vocab/health.html')
 
-
-def grab_proposal_info(request, prop_id):
-    if request.user.is_authenticated:
-        user = request.user
-    else:
-        user = None
- 
-    proposal = Proposal.objects.get(pk=prop_id)
-    proposal.grab_github_issue_info()
-
-    return redirect('/proposal/%s/edit' % proposal.pk)
 

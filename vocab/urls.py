@@ -10,7 +10,6 @@ urlpatterns = [
      re_path(r'^admin/', admin.site.urls),
      re_path(r'^proposal/(?P<id>\d+)$', viewproposal),
      re_path(r'^proposal/(?P<id>\d+)/edit$', editproposal),
-     re_path(r'^proposal/(?P<prop_id>\d+)/grab$', grab_proposal_info),
      re_path(r'^vocabversion/(?P<id>\d+)$', viewvocablistversion),     
      re_path(r'^vocabversion/(?P<id>\d+)/updateemail$', updateemail),
      re_path(r'^proposals/(?P<id>\d+)$', viewproposal_list),

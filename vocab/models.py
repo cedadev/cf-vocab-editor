@@ -450,6 +450,10 @@ class Proposal(models.Model):
         if not self.proposed_date:
             self.proposed_date = datetime.datetime.fromisoformat(issue_json['created_at'])
 
+        if not self.comment:
+            labels = [label["name"] for label in issue_json["labels"]]
+            self.comment = "Labels from git hub issue: " + ", ".join(labels)
+
         print(self, self.proposer)
         self.save()
 
