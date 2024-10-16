@@ -3,13 +3,15 @@
 	
 {% block title %}Proposals for {{vocab}}{% endblock %}
 
+{% load term_filter %}
 
 
 
 {% block main %}
 
-<div class=row"> 
 <form>
+<div class="row"> 
+<div class="col-4">
 <i class="icon-play"></i> <input type="radio" name="status" value="active" {%if not status or status == 'active' %}checked="checked"{%endif%}/>Active (not on list or rejected)
 <input type="radio" name="status" value="new" {%if status == 'new' %}checked="checked"{%endif%}/>New
 <input type="radio" name="status" value="under discussion" {%if status == 'under discussion' %}checked="checked"{%endif%}/>Under discussion
@@ -20,19 +22,50 @@
 <input type="radio" name="status" value="rejected" {%if status == 'rejected' %}checked="checked"{%endif%}/>Rejected<br />
 <i class="icon-plus"></i> <input type="radio" name="status" value="all" {%if status == 'all' %}checked="checked"{%endif%}/>All<br />
 {%if user %}<i class="icon-envelope"></i> <input type="checkbox" name="mailupdate" {%if mailupdate %}checked="checked"{%endif%}/>Mailupdate format<br />{% endif %}
-<div class="row">
-  <div class="span6">
-      <i class="icon-search"></i> Term name filter: <input type="text" name="namefilter" value="{{namefilter|default:''}}"><br />
-      <i class="icon-search"></i> Proposer filter: <input type="text" name="proposerfilter" value="{{proposerfilter|default:''}}"><br />
-      <i class="icon-search"></i> Description filter: <input type="text" name="descfilter" value="{{descfilter|default:''}}"><br />
-  </div>
-  <div class="span6">
-      <i class="icon-search"></i> unit filter: <input type="text" name="unitfilter" value="{{unitfilter|default:''}}"><br />
-      <i class="icon-search"></i> Proposal year filter: <input type="text" name="yearfilter" value="{{yearfilter|default:''}}"><br />
-      <i class="icon-search"></i> Comment filter: <input type="text" name="commentfilter" value="{{commentfilter|default:''}}"><br />
-  </div>
+</div></div>
+
+<div>
+  <h4>Filters:</h4>
 </div>
-<input  class="btn btn-primary" type="submit" value="Filter" name="filter and display">
+<div class="row">
+    <div class="col-4"><div class="form-floating m-3">
+      <input type="text" class="form-control" id="term_name_filter" value="{{namefilter|default:''}}" name="namefilter">
+      <label for="term_name_filter">Term name:</label>
+     </div></div>
+
+     <div class="col-4"><div class="form-floating m-3">
+      <input type="text" class="form-control" id="proposer_filter" value="{{proposerfilter|default:''}}" name="proposerfilter">
+      <label for="proposer_filter">Proposer:</label>
+     </div></div>
+
+     <div class="col-4"><div class="form-floating m-3">
+      <input type="text" class="form-control" id="desc_filter" value="{{descfilter|default:''}}" name="descfilter">
+      <label for="desc_filter">Description:</label>
+     </div></div>
+ 
+     <div class="col-4"><div class="form-floating m-3">
+      <input type="text" class="form-control" id="unit_filter" value="{{unitfilter|default:''}}" name="unitfilter">
+      <label for="unit_filter">Unit:</label>
+     </div></div>
+  
+     <div class="col-4"><div class="form-floating m-3">
+      <input type="text" class="form-control" id="year_filter" value="{{yearfilter|default:''}}" name="yearfilter">
+      <label for="year_filter">Year:</label>
+     </div></div>
+
+     <div class="col-4"><div class="form-floating m-3">
+      <input type="text" class="form-control" id="comm_filter" value="{{commentfilter|default:''}}" name="commentfilter">
+      <label for="comm_filter">Comments:</label>
+     </div></div>
+
+     <div class="col-4"><div class="form-floating m-3">
+      <input type="text" class="form-control" id="prop_url_filter" value="{{proposal_url_filter|default:''}}" name="proposal_url_filter">
+      <label for="prop_url_filter">Issue:</label>
+     </div></div>
+</div>
+
+
+<input class="btn btn-primary" type="submit" value="Filter" name="filter and display"/>
 <a class="btn" href="/proposals/1">Clear Filters</a>
 
 </form>
@@ -40,7 +73,7 @@
 {%if user %}
 <a class="btn btn-primary" href="/newproposal/{{vocab.pk}}">Make new proposal</a>
 <a class="btn btn-warning" href="/bulkupload/{{vocab.pk}}">Bulk upload</a>
-<a class="btn btn-warning" href="/bulkupload_phrases">Bulk upload phrases</a>
+
 {% endif %}
 </div>
 
@@ -59,33 +92,25 @@ Proposer: {{p.proposer}}
 {% else %}
 
 {% for p in proposals %}	
-<form>
-<div class="row">
-  <div class="col-12 prop prop-{{p.status}}"><h3>{{p.current_term.name|default:"No term set!"}}</h3> {{p.status}}</div>
-</div>
-<div class="row">
-  <div class="col-4">{% if user %}
-                        {% if p.status != 'complete' %}<a class="btn btn-danger" href="/proposal/{{p.id}}/edit">Edit</a>
-                     {% else %}<a class="btn btn-warning" href="/proposal/{{p.id}}">View</a>{%endif%}
-                          {% else %}<a class="btn btn-warning" href="/proposal/{{p.id}}">View</a>{% endif %}</div>
-  <div class="col-4">Proposer: {{p.proposer}}</div>
-  <div class="col-4">Proposed Date: {{p.proposed_date}}</div>
-</div>
-<div class="row">
-  <div class="col-12">Comments: {{p.comment}}</div>
-</div>
-<div class="row">
-  <div class="col-6">CF mailing list link: <a href="{{p.mail_list_url}}">{{p.mail_list_title}}</a></div>
-  <div class="col-4">Units: {{p.current_term.unit}}  {% if p.current_term.unit_ref %}({{p.current_term.unit_ref}}){% endif %}</div>
-  <div class="col-2">{% if p.updatetype == 'New' %}<span class="label label-success">New Term</span>
-                     {% elif p.updatetype == 'Updated' %}<span class="label label-info">Updated term description</span>
-                     {% else%}<span class="label label-warning">Term change from {{p.first_term}}</span>{% endif %}</div>
+
+<div class="row border border-2 border-dark p-1 m-2">
+  <div class="col-12 prop prop-{{p.status}} p-2">  
+    
+{% if p.status != 'complete' and user %}
+  <a class="btn btn-danger" href="/proposal/{{p.id}}/edit">Edit</a>
+{%endif%}
+  <a class="btn btn-warning" href="/proposal/{{p.id}}">View</a>
+
+  {{p.current_term| term_div}}
+  </div>
+  <div class="col-12 p-2">
+     {{p.proposer|default:""}} {{p.proposed_date|date:'(Y-m-d)'}}
+     <a href="{{p.mail_list_url}}">{{p.mail_list_title}}</a>
+  </div>
 </div>
 
-<div class="row">
-  <div class="col-12">{{p.current_term.description}}</div>
-</div>
-</form>
+
+
 {%endfor%}
 {% endif %}
 

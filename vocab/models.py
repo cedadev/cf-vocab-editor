@@ -221,6 +221,23 @@ class Proposal(models.Model):
     terms = models.ManyToManyField(Term, blank=True, through='ProposedTerms')
     alias = models.BooleanField(default=False)
 
+    def issue_number(self):
+        pattern = r'https://github.com/cf-convention/vocabularies/issues/(\d+)/?$'
+        m = re.match(pattern, self.mail_list_url)
+        if m:
+            return m.groupp(1)
+        else:
+            return None
+
+    def short_title(self):
+        issue_num = re.match(r'https://github.com/cf-convention/vocabularies/issues/(\d+)/?$', self.mail_list_url)
+        if self.issue_number():
+            pass
+        #if self.mail_list_title
+
+
+        return f'{self.proposer} '
+
     def __str__(self):
         return "%s [%s]" % (self.proposer, self.mail_list_title[0:40]) 
     
@@ -313,49 +330,27 @@ class Proposal(models.Model):
 
 
     @staticmethod
-    def skos_concept_string(term, change_note):
-        """String for skos representation of term change."""
-        return f"""<skos:Concept><skos:externalID>{term.externalid}</skos:externalID>
-             <skos:prefLabel>{term.name}</skos:prefLabel><skos:altLabel>null</skos:altLabel>
-             <skos:definition>{term.description}</skos:definition><skos:changeNote>{change_note}</skos:changeNote>
-             <date xmlns="http://purl.org/dc/elements/1.1/">{datetime.date.today().isoformat()}</date>
-             </skos:Concept>"""
-
-    @staticmethod
     def tsv_update_string(term, change_note):
         """String for tab seperated value representation of term change."""
         return f"{term.externalid}\t{term.name}\t\t{term.description}\t{change_note}\n"
 
-    def skosupdate(self):
-        """return update strig as skos"""
-        return self.update_string("skos")
-
     def tsvupdate(self):
-        """return update strig as tab seperated values"""
-        return self.update_string("tsv")
-
-    def update_string(self, update_type):
         """make update skos for NERC vocab server."""
         current_term = self.current_term()
         first_term = self.first_term()
         term_name_change = first_term.name != current_term.name
 
-        if update_type == "skos":
-            update_string_function = self.skos_concept_string
-        elif update_type == "tsv":
-            update_string_function = self.tsv_update_string
-
         # new record
         if not self.alias:
-            return update_string_function(current_term, "I")
+            return self.tsv_update_string(current_term, "I")
 
         # old term with no change in term name
         if not term_name_change:
-            return update_string_function(current_term, "M")
+            return self.tsv_update_string(current_term, "M")
 
         # old term with a change in the term name
         if self.alias and term_name_change: 
-            return update_string_function(first_term, "D") + update_string_function(current_term, "I")
+            return self.tsv_update_string(first_term, "D") + self.tsv_update_string(current_term, "I")
 
     def csv_mapping_update(self):
         current_term = self.current_term()
@@ -429,11 +424,10 @@ class Proposal(models.Model):
         if self.mail_list_title and self.proposed_date and self.proposer:
             return
         
-        m = re.match(r'https://github.com/cf-convention/vocabularies/issues/(\d+)', self.mail_list_url)
-        if not m:
+        issue_number = self.issue_number()
+        if not issue_number:
             return
         
-        issue_number = m.group(1)
         api_url = f"https://api.github.com/repos/cf-convention/vocabularies/issues/{issue_number}"
         r = requests.get(url=api_url, timeout=10)
         issue_json = r.json()
@@ -456,6 +450,10 @@ class Proposal(models.Model):
 
         print(self, self.proposer)
         self.save()
+
+    def P06_mapping_suggestions(self):
+        print(self.current_term().unit)
+        return Term.objects.filter(unit=self.current_term().unit).values_list('unit_ref', flat=True).distinct()
 
 
 class ProposedTerms(models.Model):

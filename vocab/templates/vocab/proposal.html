@@ -1,6 +1,6 @@
 
 {% extends "vocab/base.html" %}
-
+{% load term_filter%}
 {% block main %}
 
 <form method="post" action="/proposal/{{proposal.id}}/edit">{% csrf_token %}
@@ -61,19 +61,7 @@
 </div>
 {% for pt, date in proposed_terms %}      
 <div class="row">
-      <div class="container border border-primary m-1">
-            <div class="row"><div class="col-12"><span class="badge bg-secondary">Change Date: {{date}}</span></div></div>          
-      
-            <div class="row">
-                     <div class="col-12">Term: <b><a href="/termhistory/{{pt.id}}">{{pt.name}}</a></b></div>            
-            </div>
-       
-            <div class="row">
-                  <div class="col-3">Unit ref: {{pt.unit_ref}}</div>
-                  <div class="col-3">Unit: {{pt.unit}}</div>
-            </div>
-            <div class="row"> <div class="col-12">{{pt.description}}</div></div>
-      </div>
+ {{pt|term_div}}
 </div>
 {%endfor%}
       
@@ -90,6 +78,9 @@
             <h4>Suggested phrases</h4>
             <pre>{{phrases}}</pre>
             <div><a href="/admin/vocab/phrase/add/" class="btn btn-primary mx-1">Add phrases</a></div>
+            <div>Suggested P06 unit ref: {% for unitref in proposal.P06_mapping_suggestions %}
+                  <a href="https://vocab.nerc.ac.uk/collection/P06/current/{{unitref}}/">{{unitref}}</a>
+                  {% endfor %}</div>
       </div>
       
 </div>

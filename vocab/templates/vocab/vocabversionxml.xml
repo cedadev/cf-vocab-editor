@@ -13,9 +13,11 @@
       <description>{{pt.description}}</description>
    </entry>
 {%endfor%} 
-{% for a in vocabversion.aliases %}  
-  <alias id="{{a.name}}">
-    <entry_id>{{a.termname}}</entry_id>
+
+{% for alias, termnames in aliases.items %}  
+  <alias id="{{alias}}">
+    {% for termname in termnames %}<entry_id>{{termname}}</entry_id>
+    {%endfor%} 
   </alias>
 {%endfor%} 
 

@@ -6,14 +6,29 @@
 
 {% block main %}
 
+{% if user %}
+<a class="btn btn-warning" href="/bulkupload_phrases">Bulk upload phrases</a>
+{% endif %}
+
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Pattern</th>
+      <th scope="col">Phrase</th>
+    </tr>
+  </thead>
+  <tbody>
 
 {% for p in phrases %}
+<tr>
+  <td class="font-monospace">{{p.regex}}</td>
+  <td>{{p.text}}</td>
+</tr>
 
-<div class="row">
-  <div class="col-5">{{p.regex}}</div>
-  <div class="col-7">{{p.text}}</div>
-</div>
 
 {%endfor%}
+</tbody>
+</table>
 
 {% endblock %}

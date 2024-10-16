@@ -2,7 +2,7 @@ import re
 import csv
 import io
 
-from vocab.models import *
+
 from django.shortcuts import redirect, render, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
@@ -10,6 +10,9 @@ from django.template.context_processors import csrf
 from datetime import datetime
 from urllib.request import urlopen
 from django.http import HttpResponse
+from django.contrib import messages
+
+from vocab.models import Proposal, Phrase, Term, ProposedTerms, VocabList, VocabListVersion, Alias
 
 
 def viewproposal_list(request, id):
@@ -21,6 +24,7 @@ def viewproposal_list(request, id):
     mailupdate = request.GET.get('mailupdate', None) 
     namefilter = request.GET.get('namefilter', None) 
     proposerfilter = request.GET.get('proposerfilter', None) 
+    proposal_url_filter = request.GET.get('proposal_url_filter', None) 
     descfilter = request.GET.get('descfilter', None) 
     commentfilter = request.GET.get('commentfilter', None)
     unitfilter = request.GET.get('unitfilter', None)
@@ -45,14 +49,13 @@ def viewproposal_list(request, id):
     else: 
         proposals = proposals.filter(status__in=('accepted', 'new', 'under discussion'))
 
-    
-    # filter by proposer name
+    # filter by proposer url
     if proposerfilter:
-        proposals = proposals.filter(proposer__icontains=proposerfilter)
+        proposals = proposals.filter(proposer__icontains=proposerfilter)    
 
-    # filter by description
-    if descfilter:
-        proposals = proposals.filter(description__icontains=descfilter)
+    # filter by proposer name
+    if proposal_url_filter:
+        proposals = proposals.filter(mail_list_url__icontains=proposal_url_filter)
 
     # filter by comment
     if commentfilter:
@@ -60,11 +63,22 @@ def viewproposal_list(request, id):
 
    # filter by proposal date
     if yearfilter:
-        start = datetime(int(yearfilter), 1, 1)
-        end = datetime(int(yearfilter)+1, 1, 1)
-        proposals = proposals.filter(proposed_date__lt=end, proposed_date__gt=start)
+        proposals = proposals.filter(proposed_date__year=int(yearfilter))
 
-    proposals = proposals.order_by('-created', 'mail_list_title')
+    proposals = proposals.order_by('mail_list_url', 'mail_list_title', '-created')
+
+
+    # filter by description
+    if descfilter:
+        descfilters = namefilter.split()
+        filtered = []
+        for p in proposals:
+            if p.current_term():
+                for desc in descfilters:
+                    if p.current_term().description.find(desc) != -1:
+                        filtered.append(p)
+                        break
+        proposals = filtered
 
     # filter by unit
     if unitfilter:
@@ -294,27 +308,35 @@ def scrapproposal(request, proposal_id):
     return redirect('/proposals/%s' % vocab.pk)
 
 
+def add_term_to_proposal(name, description, unit, unit_ref, externalid, proposal):
+    """Add a new term to a proposal"""
+    newterm = Term(name=name, description=description, unit=unit, unit_ref=unit_ref, externalid=externalid)
+    newterm.save()
+    proposedterm = ProposedTerms(term=newterm, proposal=proposal)
+    proposedterm.save()
+
 def editproposal(request, id):
 
     if request.user.is_authenticated:
         user=request.user
     else:
-        return render (request, 'vocab/access_denied.html')
+        return render (request, 'vocab/access_denied.html', status=403)
 	    
     proposal = Proposal.objects.get(pk=id)
     # update proposal info
-    proposal.status = request.POST.get('status', 'new')
-    proposal.proposer = request.POST.get('proposer', '').strip()
-    proposed_date = request.POST.get('proposed_date', '')
-    proposal.comment = request.POST.get('comment', '').strip()
-    proposal.mail_list_url = request.POST.get('mail_list_url', '').strip()
-    proposal.mail_list_title  = request.POST.get('mail_list_title', '').strip()
+    if request.method == 'POST':
+        proposal.status = request.POST.get('status', 'new')
+        proposal.proposer = request.POST.get('proposer', '').strip()
+        proposed_date = request.POST.get('proposed_date', '')
+        proposal.comment = request.POST.get('comment', '').strip()
+        proposal.mail_list_url = request.POST.get('mail_list_url', '').strip()
+        proposal.mail_list_title  = request.POST.get('mail_list_title', '').strip()
 
-    proposal.save()
-    proposal.grab_github_issue_info()
+        proposal.save()
+        proposal.grab_github_issue_info()
 
-    if proposed_date: 
-        proposal.proposed_date = datetime.strptime(proposed_date, "%Y-%m-%d")
+        if proposed_date: 
+            proposal.proposed_date = datetime.strptime(proposed_date, "%Y-%m-%d")
 
     # find current term
     current_term = proposal.current_term()
@@ -325,16 +347,10 @@ def editproposal(request, id):
         (ct_name, ct_desc, ct_unit, ct_unit_ref, ct_externalid) = ('', '', '', '', '')
 
     # update new terms
-    name = request.POST.get('name', None)
-    if name:
-        name = name.strip()
-    description = request.POST.get('description', None)
-    if description:
-        description = description.strip()
-    unit = request.POST.get('unit', None)
-    if unit:
-        unit=unit.strip()
-    unit_ref = request.POST.get('unitref', None)
+    name = request.POST.get('name', '').strip()
+    description = request.POST.get('description', '').strip()
+    unit = request.POST.get('unit', '').strip()
+    unit_ref = request.POST.get('unitref', '').strip()
 
     if name: # if name is blank then don't make a new term
         if name==ct_name and description==ct_desc and unit==ct_unit and unit_ref==ct_unit_ref:
@@ -342,21 +358,17 @@ def editproposal(request, id):
             pass
         elif name == ct_name:
             # if the term name has not changed then maintain the external id.
-            newterm = Term(name=name, description=description, unit=unit, unit_ref=unit_ref, externalid=ct_externalid)
-            newterm.save()
-            proposedterm = ProposedTerms(term=newterm, proposal=proposal)
-            proposedterm.save()
-        else:    
+            add_term_to_proposal(name, description, unit, unit_ref, ct_externalid, proposal)
+        else:
             # new version of the term to add with new name  
-            newterm = Term(name=name, description=description, unit=unit, unit_ref=unit_ref, externalid='')
-            newterm.save()
-            proposedterm = ProposedTerms(term=newterm, proposal=proposal)
-            proposedterm.save()
+            add_term_to_proposal(name, description, unit, unit_ref, '', proposal)
         
     # phrase match
     current_term = proposal.current_term()
-    if current_term: phrases = current_term.phrases()
-    else: phrases = 'Not term to match yet!'     
+    if current_term:
+        phrases = current_term.phrases()
+    else:
+        phrases = 'Not term to match yet!' 
 
     context = {'proposal': proposal, 'currentterm':current_term, 'phrases': phrases, 'vocab': proposal.vocab_list,
                'proposed_terms': proposal.proposed_terms(), 'user': user}
@@ -407,14 +419,11 @@ def viewvocablistversion(request, id):
 
     vocabversion = VocabListVersion.objects.get(pk=id)
     xml = request.GET.get('xml', None)
-    skos = request.GET.get('skos', None)
     tsv = request.GET.get('tsv', None)
     units = request.GET.get('units', None)
     updateview = request.GET.get('updateview', None)
     
-    terms =  vocabversion.terms.all().order_by('name')
-    for t in terms:
-        aliases = t.aliases()   
+    terms =  vocabversion.terms.all().order_by('name') 
 
     proposals = Proposal.objects.filter(vocab_list_version=vocabversion)
       
@@ -424,11 +433,18 @@ def viewvocablistversion(request, id):
     context.update(csrf(request))
 
     if xml:
+
+        aliases = {}
+        for a in vocabversion.aliases():
+
+            print(f"  - has name {a}. ")
+            if a.name in aliases:
+                aliases[a.name].append(a.termname)
+            else: 
+                aliases[a.name] = [a.termname]
+        context["aliases"] = aliases
+
         response =  render(request, 'vocab/vocabversionxml.xml', context)
-        response['Content-Type'] = 'application/data'
-        return response 
-    if skos: 
-        response =  render(request, 'vocab/vocabversionskosupdate.xml', context)
         response['Content-Type'] = 'application/data'
         return response 
     if tsv:
