@@ -29,12 +29,18 @@ def term_div(term):
     else:
         unit_str = ""
 
-    x = f'<span class="font-monospace fw-bolder">{term.name}{unit_str}{external_id}</span> <small>{term.description}</small>'
+    x = f'<span class="font-monospace fw-bolder">{term.name}{unit_str}{external_id}</span> <br/><small>{term.description}</small>'
     print(x)
     return mark_safe(x)
 
 
 register.filter("term_div", term_div)
+
+
+def alias_span(alias):
+    return mark_safe(f'<span class="font-monospace fst-italic fw-bold">{alias.name}</span>')
+
+register.filter("alias_span", alias_span)
 
 
 def prop_div(prop, edit=False):

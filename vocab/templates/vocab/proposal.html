@@ -1,6 +1,17 @@
 
 {% extends "vocab/base.html" %}
 {% load term_filter%}
+
+
+{% block extra_js %}
+<script>
+function fill_field(field_id, value)
+{
+    document.getElementById(field_id).value = value;
+}
+</script>
+{% endblock %}
+
 {% block main %}
 
 <form method="post" action="/proposal/{{proposal.id}}/edit">{% csrf_token %}
@@ -56,36 +67,56 @@
       </div></div>
 </div>
 
-<div class="row">
-      <h5>Proposal Term History</h5>
-</div>
-{% for pt, date in proposed_terms %}      
-<div class="row">
- {{pt|term_div}}
-</div>
-{%endfor%}
+<div class="border border-2 border-dark m-2">
+      <div class="row">
+            <h5>Proposal Term History</h5>
+      </div>
+      <table class="table">
       
+      {% for pt, date in proposed_terms %}      
+      <tr>
+       <td>{{date}}</td> 
+       <td>{{pt|term_div}}</td>
+      </tr>
+      {%endfor%}
+      </table>
+</div>
+
+
  <div class="row">
-   		<div class="col-4">Term: <input type="text" name="name" value="{{currentterm.name}}"></div>
-   		<div class="col-4">unit: <input type="text" name="unit" value="{{currentterm.unit}}"></div>
+      <div class="col-6"><div class="form-floating m-2">
+            <input type="text" class="form-control" id="name_field" value="{{currentterm.name}}" name="name">
+            <label for="name_field">Term name:</label>
+      </div></div>
+      <div class="col-2"><div class="form-floating m-2">
+            <input type="text" class="form-control" id="unit_field" value="{{currentterm.unit}}" name="unit">
+            <label for="unit_field">units:</label>
+      </div></div>
+      <div class="col-2"><div class="form-floating m-2">
+            <input type="text" class="form-control" id="unit_ref_field" value="{{currentterm.unit_ref}}" name="unitref">
+            <label for="unit_ref_field">P06 ref:</label>
+      </div></div>   	
+      <div class="col-2">{% for unitref in proposal.P06_mapping_suggestions %}
+            {% if unitref != '' and unitref != currentterm.unit_ref %}
+            <a href="https://vocab.nerc.ac.uk/collection/P06/current/{{unitref}}/">{{unitref}}</a>
+            <span class="btn btn-warning" onclick="fill_field('unit_ref_field', '{{unitref}}')">&larr; {{unitref}}</span>
+            {% endif %}
+            {% endfor %}</div>
  </div>
- <div class="row">
-  		<div class="col-4">Unit ref: <input type="text" name="unitref" value="{{currentterm.unit_ref}}"></div>
- </div>
+
  <div class="row">
       <div class="col-6"><textarea name="description" width="90" rows="8" class="form-control m-1">{{currentterm.description}}</textarea></div>
       <div class="col-6">
             <h4>Suggested phrases</h4>
             <pre>{{phrases}}</pre>
             <div><a href="/admin/vocab/phrase/add/" class="btn btn-primary mx-1">Add phrases</a></div>
-            <div>Suggested P06 unit ref: {% for unitref in proposal.P06_mapping_suggestions %}
-                  <a href="https://vocab.nerc.ac.uk/collection/P06/current/{{unitref}}/">{{unitref}}</a>
-                  {% endfor %}</div>
+            
       </div>
       
 </div>
 <div class="row">
       <div class="col-8"><input type="submit" value="Update proposal"></div>
+     <!-- <div class="col-8"><input type="submit" name="makenext" value="Update proposal and clone"></div> -->
 </div>
 </form>
 

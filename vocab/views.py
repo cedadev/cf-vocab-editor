@@ -375,6 +375,14 @@ def editproposal(request, id):
     # security thing for post requests...
     context.update(csrf(request))
 
+    # if make next then save
+    if request.POST.get('makenext'):
+        new_prop = Proposal(mail_list_url=proposal.mail_list_url, mail_list_title=proposal.mail_list_title,
+                            proposer=proposal.proposer, proposed_date=proposal.proposed_date, 
+                            comment=proposal.comment, status="new")
+        new_prop.save()
+        return render(request, 'vocab/proposal.html', {'proposal': new_prop, 'vocab': proposal.vocab_list, 'user': user})  
+
     return render(request, 'vocab/proposal.html', context)  
 
 def viewproposal(request, id):

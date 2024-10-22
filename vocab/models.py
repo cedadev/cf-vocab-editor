@@ -225,7 +225,7 @@ class Proposal(models.Model):
         pattern = r'https://github.com/cf-convention/vocabularies/issues/(\d+)/?$'
         m = re.match(pattern, self.mail_list_url)
         if m:
-            return m.groupp(1)
+            return m.group(1)
         else:
             return None
 
@@ -324,9 +324,6 @@ class Proposal(models.Model):
         elif not term_name_change: return "Updated"  
         # old term with a change in the term name
         else: return "TermChange"          
-
-    def html_for_list(self):
-        return render("proposal_row.html")
 
 
     @staticmethod
@@ -452,8 +449,10 @@ class Proposal(models.Model):
         self.save()
 
     def P06_mapping_suggestions(self):
-        print(self.current_term().unit)
-        return Term.objects.filter(unit=self.current_term().unit).values_list('unit_ref', flat=True).distinct()
+        c_term = self.current_term()
+        if c_term is None:
+            return []
+        return Term.objects.filter(unit=c_term.unit).exclude(externalid="").values_list('unit_ref', flat=True).distinct()
 
 
 class ProposedTerms(models.Model):

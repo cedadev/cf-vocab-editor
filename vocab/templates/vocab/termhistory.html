@@ -7,12 +7,10 @@
 
 {{term|term_div}}
 
-<h1>{{term.name}}</h1>
-{{term.description}} <br>
 <li>List containing this term version: {% for vlv in term.vocab_list_versions %}
 <a href="/vocabversion/{{vlv.id}}">{{vlv}}</a>{% endfor %}</li>
-<li>Proposls with this term version:{% for p in term.proposals %}
-<li>Proposal: <a class="prop-{{p.status}}" href="/proposal/{{p.id}}/edit">{{p}}</a></li></li>
+<li> Proposls with this term version: {% for p in term.proposals %}
+<li> Proposal: <a class="prop-{{p.status}}" href="/proposal/{{p.id}}/edit">{{p}}</a></li></li>
 {% endfor %}
 
 <br/>
@@ -32,7 +30,7 @@
 <span class="label">There are no aliases for this term</span>
 {% endif %}
 
-<br/>
+<br/><hr/>
 
 {% if isaliasedterms %}
 <span class="label">This term is alaised by</span>

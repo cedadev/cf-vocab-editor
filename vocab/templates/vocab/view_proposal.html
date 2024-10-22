@@ -1,6 +1,7 @@
 {% extends "vocab/base.html" %}
 	
 {% block main %}
+{% load term_filter %}
 
 <div class="row">
       <div class="col-12 prop prop-{{proposal.status}}"><h3>{{proposal.current_term.name|default:"No term set!"}}</h3> {{proposal.status}}</div>
@@ -17,25 +18,15 @@
       <div class="col-8"><a href="{{proposal.mail_list_url}}">{{proposal.mail_list_title}}</a></div>
 </div>
 
-<div class="row">
 {% for pt, date in proposed_terms %}      
 <div class="container">
- <div class="row">
-  		<div class="col-12 muted">Change Date: {{date}}</div>
- </div>
- <div class="row">
-   		<div class="col-12">Term: <b>{{pt.name}}</b></div>
- </div>
- <div class="row">
-		<div class="col-4">Unit: {{pt.unit}}</div>
-		<div class="col-8">Unit ref: {{pt.unit_ref}}</div>
- </div>
- <div class="row">
-   		<div class="col-12">{{pt.description}}</div>
+ <div class="row border border-1 border-dark m-2">
+  		<div class="col-12 fs-6 text-end">Change Date: {{date}}</div>
+            {{pt | term_div}}
  </div>
 </div>
 {%endfor%}
-</div>
+
 
 
 {% endblock %}
