@@ -51,6 +51,29 @@ def prop_div(prop, edit=False):
     s = f'<div class="prop prop-{prop.status}">{status_badge} {prop.proposer} {term_str}</div>'
     return mark_safe(s)
 
-
 register.filter("prop_div", prop_div)
+
+
+def prop_change_div(prop):
+
+    if prop.proposed_date:
+        date = prop.proposed_date
+    else: 
+        date = ""
+    status_badge = f'{date} <span class="badge  prop prop-{prop.status}"> {prop.status}</span>'
+    term_str = term_div(prop.current_term())
+    
+    s = f'<div class="prop prop-{prop.status} m-2">{status_badge} {prop.proposer} {term_str} Added to: {prop.vocab_list_version}</div>'
+    return mark_safe(s)
+register.filter("prop_change_div", prop_change_div)
+
+def prop_change_type_badge(prop):
+    updatetype = prop.updatetype()
+    if updatetype == 'New':
+        return mark_safe('<span class="badge bg-success">New Term</span>')
+    elif updatetype == 'Updated':
+        return mark_safe('<span class="badge bg-info">Updated term description</span>')
+    else:
+        return mark_safe(f'<span class="badge bg-warning">Term change from {prop.first_term}</span>')
+register.filter("prop_change_type_badge", prop_change_type_badge)
 

@@ -527,8 +527,15 @@ def viewtermhistory(request, id):
 	
             if term not in isaliasedterms:  isaliasedterms.append(term)
 #            isaliasedterms.append(a.termname)
+    print(isaliasedterms)
+    print(hasaliasterms)
+    related_terms = [term] + list(isaliasedterms) + list(hasaliasterms)
+
+    proposals = Proposal.objects.filter(terms__in=related_terms).distinct()
+
         
-    context = {'term': term, 'hasaliasterms': hasaliasterms, 'isaliasedterms':isaliasedterms}
+    context = {'term': term, 'hasaliasterms': hasaliasterms, 'isaliasedterms':isaliasedterms, 
+               "proposals": proposals}
     return render(request, 'vocab/termhistory.html', context)  
     
 def viewphraselist(request):

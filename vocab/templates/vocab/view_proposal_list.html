@@ -141,9 +141,7 @@
 
   {{p.current_term| term_div}} 
   
-  <div>  {% if p.updatetype == 'New' %}<span class="badge bg-success">New Term</span>
-                     {% elif p.updatetype == 'Updated' %}<span class="badge bg-info">Updated term description</span>
-                     {% else%}<span class="badge bg-warning">Term change from {{p.first_term}}</span>{% endif %}</div>
+  <div>  {{p| prop_change_type_badge}} </div>
   
   <div class="col-12 p-2">
      {{p.proposer|default:""}} {{p.proposed_date|date:'(Y-m-d)'}}
