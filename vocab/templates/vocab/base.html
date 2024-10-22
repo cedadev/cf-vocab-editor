@@ -1,4 +1,6 @@
 
+{% load term_filter %}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,13 +12,20 @@
 <title>{% block meta_title %}{% endblock %}</title>
 <link rel="shortcut icon" href="/static/img/favicon.ico">
 
-<link rel="stylesheet" href="/static/css/bootstrap.css">
+<!--<link rel="stylesheet" href="/static/css/bootstrap.css">
 <link rel="stylesheet" href="/static/css/bootstrap.responsive.css">
-<link rel="stylesheet" href="/static/css/ceda.css""
+-->
+<link rel="stylesheet" href="/static/css/ceda.css">
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
 {% block extra_css %}{% endblock %}
 
-<script src="/static/js/bootstrap.min.js"></script>
+<!--<script src="/static/js/bootstrap.min.js"></script>-->
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
 
 <script>
 $(function() {
@@ -32,59 +41,59 @@ $(function() {
 </head>
 
 
-
 <body id="{% block body_id %}body{% endblock %}">
 
-<!--<div class="navbar">
-  <div class="navbar-inner">
-    --><div class="container">
-      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
 
-      <div id="site-info" class="span6">
-         <div id="site-logo"><a href="/"><img src="/static/img/ceda_logo_trasnp_white_4_small.png" /></a></div>
-         <div id="site-titles">
-            {% if settings.SITE_TAGLINE %}<div id="site-tagline">{{ settings.SITE_TAGLINE }}</div>{% endif %}
-         </div>
-     <!--
+  {% block navbar %}
+  <nav class="navbar bg-dark navbar-expand-lg bg-body-tertiary"  data-bs-theme="dark">
+    <div class="container">
+      <a class="navbar-brand" href="https://cfconventions.org/"><img src="/static/img/cflogo.png"/> CF Conventions</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/proposals/{{vocab.pk| default:1}}">Proposals</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/phraselist">Phrase list</a>
+          </li>
+          {%if user %}
+          <li class="nav-item"><a class="nav-link" href="/admin/vocab/{{vocab.pk| default:1}}">{{vocab}} Versions</a></li>
+          <li class="nav-item"><a class="nav-link" href="/vocabversion/{{vocab.latest_version.pk}}">Latest version: {{vocab.latest_version}}</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin/vocab/phrase">Edit Stock Phrases</a></li>
+          {% endif %}
+        </ul>
       </div>
-
     </div>
--->
+  </nav>
+  {% endblock %}
 
-<div class="container">
+  <div class="container">
 
   <div class="row">
-    <div class="span12">
-      <div class="navbar">
-{% block navbar %}
-    <ul class="nav">
-{%if user %}      
-      <li><a href="/admin/vocab/{{vocab.pk}}"><i class="icon-home"></i>{{vocab}} page</a></li>
-      <li><a href="/vocabversion/{{vocab.latest_version.pk}}">Latest version: {{vocab.latest_version}}</a></li>
-{% endif %}
-      <li><a href="/proposals/{{vocab.pk}}">Proposals</a></li>
-{%if user %}      
-      <li><a href="/admin/vocab/phrase">Edit Stock Phrases</a></li>
-{% endif %}
-    </ul>
-{% endblock %}
-      </div>
+    <div class="col"> 
+      <h1>{% block title %}{% endblock %}</h1>
     </div>
   </div>
 
-  <h1>{% block title %}{% endblock %}</h1>
 
-  <div class="container">
-    <div class="row">
-      <div class="span12 left main">
+  <div class="row">
+    <div class="col"> 
         {% block main %}{% endblock %}
       </div>
     </div>
-  </div>
+
+    {% block footer %}
+  <div class="row"><div class="col"> 
+    <hr>
+    <small>This vocab management tool maintained by <a href="https://www.ceda.ac.uk">CEDA</a></small>
+    
+   
+  </div></div>
+  {% endblock %}
 
 </div>
 

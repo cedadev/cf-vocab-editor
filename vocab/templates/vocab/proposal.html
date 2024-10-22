@@ -1,83 +1,129 @@
 
 {% extends "vocab/base.html" %}
-	
+{% load term_filter%}
 
 
+{% block extra_js %}
+<script>
+function fill_field(field_id, value)
+{
+    document.getElementById(field_id).value = value;
+}
+</script>
+{% endblock %}
 
 {% block main %}
 
-
 <form method="post" action="/proposal/{{proposal.id}}/edit">{% csrf_token %}
 
+<div class="row">
+    <div class="col prop prop-{{proposal.status}}">
+      <input class="form-check-input" type="radio" name="status" value="new" id="status_new"
+      {%if proposal.status == 'new' %}checked="checked"{%endif%}/> <label class="form-check-label me-3" for="status_new">New</label>
 
+      <input class="form-check-input" type="radio" name="status" value="accepted" id="status_accepted"
+      {%if proposal.status == 'accepted' %}checked="checked"{%endif%}/> <label class="form-check-label me-3" for="status_accepted">Accepted</label>
 
-<div class="row">
-       <div class="span12 prop prop-{{proposal.status}}">
-              <input type="radio" name="status" value="new" {%if proposal.status == 'new' %}checked="checked"{%endif%}/>New
-              <input type="radio" name="status" value="accepted" {%if proposal.status == 'accepted' %}checked="checked"{%endif%}/>Accepted
-              <input type="radio" name="status" value="rejected" {%if proposal.status == 'rejected' %}checked="checked"{%endif%} />Rejected
-              <input type="radio" name="status" value="under discussion" {%if proposal.status == 'under discussion' %}checked="checked"{%endif%}/>Under Discussion</div>
-</div>
-<div class="row">
-      <div class="span12 prop prop-{{proposal.status}}"><h3>{{proposal.current_term.name|default:"No term set!"}}</h3> {{proposal.status}}</div>
-</div>
-<div class="row">
-      <div class="span3">Created: {{proposal.created}}</div>
-      <div class="span3">Proposer: <input type="text" name="proposer" value="{{proposal.proposer}}"></div>
-      <div class="span2">Proposed Date: <input type="text" name="proposed_date" value="{{proposal.proposed_date|date:"Y-m-d"}}"><p class="muted">Date format YYYY-MM-DD</p></div>
-</div>
-<div class="row">
-      <div class="span8">Comments: <textarea name="comment">{{proposal.comment}}</textarea></div>
-</div>
-<div class="row">
-      <div class="span8">Thread URL: <input type="text" name="mail_list_url" value="{{proposal.mail_list_url}}"><a href="{{proposal.mail_list_url}}">Test mail list link</a></div>
-</div>
-<div class="row">
-      <div class="span8">Thread title:<input type="text" name="mail_list_title" value="{{proposal.mail_list_title}}"></div>
+      <input class="form-check-input" type="radio" name="status" value="rejected" id="status_rejected"
+      {%if proposal.status == 'rejected' %}checked="checked"{%endif%}/> <label class="form-check-label me-3" for="status_rejected">Rejected</label>
+
+      <input class="form-check-input" type="radio" name="status" value="under discussion" id="status_ud"
+      {%if proposal.status == 'under discussion' %}checked="checked"{%endif%}/> <label class="form-check-label me-3" for="status_ud">Under Discussion</label>
+    </div>
 </div>
 
-
-{% for pt, date in proposed_terms %}      
-<div class="well">
- <div class="row">
-  		<div class="span12 muted">Change Date: {{date}}</div>
- </div>
- <div class="row">
-   		<div class="span8">Term: <b><a href="/termhistory/{{pt.id}}">{{pt.name}}</a></b></div>
-   		<div class="span3">Unit: {{pt.unit}}</div>
- </div>
- <div class="row">
-   		<div class="span4">Unit ref: {{pt.unit_ref}}</div>
-   		<div class="span3">AMIP: {{pt.amip}}</div>
-   		<div class="span4">GRIB: {{pt.grib}}</div>
- </div>
- <div class="row">
-   		<div class="span8">{{pt.description}}</div>
- </div>
+<div class="row">
+      <div class="col prop prop-{{proposal.status}}"><h3>{{proposal.current_term.name|default:"No term set!"}}</h3> {{proposal.status}}</div>
 </div>
-{%endfor%}
+
+<div class="row">
+      <div class="col-4">Created: {{proposal.created}}</div>
+      <div class="col-4"><div class="form-floating m-3">
+            <input type="text" class="form-control" id="proposerfield" value="{{proposal.proposer}}" name="proposer">
+            <label for="proposerfield">Proposer:</label>
+      </div></div>
+      <div class="col-4"><div class="form-floating m-3">
+            <input type="text" class="form-control" id="prop_date_field" value="{{proposal.proposed_date|date:'Y-m-d'}}" name="proposed_date">
+            <label for="prop_date_field">Proposed Date: (YYYY-MM-DD)</label>
+      </div></div>
+</div>
+
+<div class="row">
+      <div class="col-4"><div class="form-floating m-2">
+            <input type="text" class="form-control" id="mail_list_url_field" value="{{proposal.mail_list_url}}" name="mail_list_url">
+            <label for="mail_list_url_field">Thread URL:</label>
+      </div></div>
+      <div class="col-4"><div class="form-floating m-2">
+            <input type="text" class="form-control" id="mail_list_title_field" value="{{proposal.mail_list_title}}" name="mail_list_title">
+            <label for="mail_list_title_field">Thread title:</label>
+      </div></div>
+      <div class="col-4">{% if proposal.mail_list_url %}<a class="btn btn-primary m-2" href="{{proposal.mail_list_url}}">Goto Thread</a>{% endif %}</div>
+</div>
+
+<div class="row">
+      <div class="col-12"><div class="form-floating">
+            <textarea class="form-control m-1" name="comment" id="comments_field" rows="6">{{proposal.comment}}</textarea>
+      <label for="comments_field">Comments</label>
+      </div></div>
+</div>
+
+<div class="border border-2 border-dark m-2">
+      <div class="row">
+            <h5>Proposal Term History</h5>
+      </div>
+      <table class="table">
       
+      {% for pt, date in proposed_terms %}      
+      <tr>
+       <td>{{date}}</td> 
+       <td>{{pt|term_div}}</td>
+      </tr>
+      {%endfor%}
+      </table>
+</div>
+
+
  <div class="row">
-   		<div class="span4">Term: <input type="text" name="name" value="{{currentterm.name}}"></div>
-   		<div class="span4">unit: <input type="text" name="unit" value="{{currentterm.unit}}"></div>
+      <div class="col-6"><div class="form-floating m-2">
+            <input type="text" class="form-control" id="name_field" value="{{currentterm.name}}" name="name">
+            <label for="name_field">Term name:</label>
+      </div></div>
+      <div class="col-2"><div class="form-floating m-2">
+            <input type="text" class="form-control" id="unit_field" value="{{currentterm.unit}}" name="unit">
+            <label for="unit_field">units:</label>
+      </div></div>
+      <div class="col-2"><div class="form-floating m-2">
+            <input type="text" class="form-control" id="unit_ref_field" value="{{currentterm.unit_ref}}" name="unitref">
+            <label for="unit_ref_field">P06 ref:</label>
+      </div></div>   	
+      <div class="col-2">{% for unitref in proposal.P06_mapping_suggestions %}
+            {% if unitref != '' and unitref != currentterm.unit_ref %}
+            <a href="https://vocab.nerc.ac.uk/collection/P06/current/{{unitref}}/">{{unitref}}</a>
+            <span class="btn btn-warning" onclick="fill_field('unit_ref_field', '{{unitref}}')">&larr; {{unitref}}</span>
+            {% endif %}
+            {% endfor %}</div>
  </div>
+
  <div class="row">
-  		<div class="span4">Unit ref: <input type="text" name="unitref" value="{{currentterm.unit_ref}}"></div>
-   		<div class="span2">AMIP: <input type="text" name="amip" value="{{currentterm.amip}}"></div>
-   		<div class="span2">GRIB: <input type="text" name="grib" value="{{currentterm.grib}}"></div>
- </div>
- <div class="row">
-   		<div class="span10"><textarea name="description" width="90" rows="8" class="input-xxlarge">{{currentterm.description}}</textarea></div>
- </div>
+      <div class="col-6"><textarea name="description" width="90" rows="8" class="form-control m-1">{{currentterm.description}}</textarea></div>
+      <div class="col-6">
+            <h4>Suggested phrases</h4>
+            <pre>{{phrases}}</pre>
+            <div><a href="/admin/vocab/phrase/add/" class="btn btn-primary mx-1">Add phrases</a></div>
+            
+      </div>
+      
+</div>
 <div class="row">
-      <div class="span8"><input type="submit" value="Update proposal"></div>
+      <div class="col-8"><input type="submit" value="Update proposal"></div>
+     <!-- <div class="col-8"><input type="submit" name="makenext" value="Update proposal and clone"></div> -->
 </div>
 </form>
 
 <div>
-{%if proposal.status == 'new' %}<a class="btn btn-danger" href="/scrapproposal/{{proposal.id}}">Scrap proposal</a> {%endif%}
-{%if proposal.status == 'rejected' %}<a class="btn btn-danger" href="/scrapproposal/{{proposal.id}}">Scrap proposal</a> {%endif%} 
-<a class="btn btn-primary" href="/newproposal/{{vocab.pk}}">Make new proposal</a></div><p> </p>
-<span class="label label-info">Phrases</span>{{phrases}}
+{%if proposal.status == 'new' %}<a class="btn btn-danger m-3" href="/scrapproposal/{{proposal.id}}">Scrap proposal</a> {%endif%}
+{%if proposal.status == 'rejected' %}<a class="btn btn-danger m-3" href="/scrapproposal/{{proposal.id}}">Scrap proposal</a> {%endif%} 
+<a class="btn btn-primary m-3" href="/newproposal/{{vocab.pk}}">Make new proposal</a></div><p> </p>
+
 {% endblock %}
 

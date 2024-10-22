@@ -1,53 +1,32 @@
-
-
-
 {% extends "vocab/base.html" %}
 	
-
-
-
 {% block main %}
-
-
+{% load term_filter %}
 
 <div class="row">
-      <div class="span12 prop prop-{{proposal.status}}"><h3>{{proposal.current_term.name|default:"No term set!"}}</h3> {{proposal.status}}</div>
+      <div class="col-12 prop prop-{{proposal.status}}"><h3>{{proposal.current_term.name|default:"No term set!"}}</h3> {{proposal.status}}</div>
 </div>
 <div class="row">
-      <div class="span3">Created: {{proposal.created}}</div>
-      <div class="span3">Proposer: {{proposal.proposer}}</div>
-      <div class="span2">Proposed Date: {{proposal.proposed_date|date:"Y-m-d"}}</div>
+      <div class="col-3">Created: {{proposal.created}}</div>
+      <div class="col-3">Proposer: {{proposal.proposer}}</div>
+      <div class="col-2">Proposed Date: {{proposal.proposed_date|date:"Y-m-d"}}</div>
 </div>
 <div class="row">
-      <div class="span8">{{proposal.comment}}</div>
+      <div class="col-8">{{proposal.comment}}</div>
 </div>
 <div class="row">
-      <div class="span8"><a href="{{proposal.mail_list_url}}">{{proposal.mail_list_title}}</a></div>
+      <div class="col-8"><a href="{{proposal.mail_list_url}}">{{proposal.mail_list_title}}</a></div>
 </div>
-
-
-
 
 {% for pt, date in proposed_terms %}      
-<div class="well">
- <div class="row">
-  		<div class="span12 muted">Change Date: {{date}}</div>
- </div>
- <div class="row">
-   		<div class="span8">Term: <b>{{pt.name}}</b></div>
-   		<div class="span3">Unit: {{pt.unit}}</div>
- </div>
- <div class="row">
-   		<div class="span4">Unit ref: {{pt.unit_ref}}</div>
-   		<div class="span3">AMIP: {{pt.amip}}</div>
-   		<div class="span4">GRIB: {{pt.grib}}</div>
- </div>
- <div class="row">
-   		<div class="span8">{{pt.description}}</div>
+<div class="container">
+ <div class="row border border-1 border-dark m-2">
+  		<div class="col-12 fs-6 text-end">Change Date: {{date}}</div>
+            {{pt | term_div}}
  </div>
 </div>
 {%endfor%}
-      
+
 
 
 {% endblock %}

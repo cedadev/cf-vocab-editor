@@ -14,3 +14,19 @@ class SimpleTest(TestCase):
         Tests that 1 + 1 always equals 2.
         """
         self.assertEqual(1 + 1, 2)
+
+# can add a proposal
+
+# can scrap from github issue
+
+# can publish to xml
+
+# can publish to NVS
+
+# can find proposals by github issue
+
+# can find proposal by term name
+
+
+
+

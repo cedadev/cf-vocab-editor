@@ -1,21 +1,23 @@
 <?xml version="1.0"?>
-<standard_name_table xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cf-standard-name-table-1.1.xsd">
+   <standard_name_table xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://cfconventions.org/Data/schema-files/cf-standard-name-table-2.0.xsd">
    <version_number>{{vocabversion.version}}</version_number>
+   <conventions>CF-StandardNameTable-86</conventions>
+   <first_published>{% now "Y-m-d" %}T{% now "H:i:s" %}Z</first_published>
    <last_modified>{% now "Y-m-d" %}T{% now "H:i:s" %}Z</last_modified>
-   <institution>Program for Climate Model Diagnosis and Intercomparison</institution>
-   <contact>webmaster@pcmdi.llnl.gov</contact>
+   <institution>Centre for Environmental Data Analysis</institution>
+   <contact>support@ceda.ac.uk</contact>
 
 {% for pt in terms %}  
    <entry id="{{pt.name}}">
       <canonical_units>{{pt.unit}}</canonical_units>
-      <grib>{{pt.grib}}</grib>
-      <amip>{{pt.amip}}</amip>
       <description>{{pt.description}}</description>
    </entry>
 {%endfor%} 
-{% for a in vocabversion.aliases %}  
-  <alias id="{{a.name}}">
-    <entry_id>{{a.termname}}</entry_id>
+
+{% for alias, termnames in aliases.items %}  
+  <alias id="{{alias}}">
+    {% for termname in termnames %}<entry_id>{{termname}}</entry_id>
+    {%endfor%} 
   </alias>
 {%endfor%} 
 

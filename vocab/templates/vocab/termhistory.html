@@ -1,55 +1,20 @@
 
 {% extends "vocab/base.html" %}
-	
+{% load term_filter %}	
 
 {% block main %}
 
 
+{{term|term_div}}
 
-<h1>{{term.name}}</h1>
-{{term.description}} <br>
-<li>List containing this term version: {% for vlv in term.vocab_list_versions %}
-<a href="/vocabversion/{{vlv.id}}">{{vlv}}</a>{% endfor %}</li>
-<li>Proposls with this term version:{% for p in term.proposals %}
-<li>Proposal: <a class="prop-{{p.status}}" href="/proposal/{{p.id}}/edit">{{p}}</a></li></li>
+
+
+<h4>Proposals effecting this term</h4>
+{% for proposal in proposals %}
+{{proposal| prop_change_div}}
+{{proposal|prop_change_type_badge}}
+
 {% endfor %}
-
-<br/>
-
-{% if hasaliasterms %}
-<h2>Aliases for this term</h2>
-{% for t in hasaliasterms %}
-<h3><a href=/termhistory/{{t.id}}>{{t.name}}</a></h3>
-{{t.description}} <br>
-<li>List containing this term version: {% for vlv in t.vocab_list_versions %}
-<a href="/vocabversion/{{vlv.id}}">{{vlv}}</a>{% endfor %}</li>
-<li>Proposls with this term version:{% for p in t.proposals %}
-<li>Proposal: <a class="prop-{{p.status}}" href="/proposal/{{p.id}}/edit">{{p}}</a></li></li>
-{% endfor %}
-{% endfor %}
-{% else %}
-<span class="label">There are no aliases for this term</span>
-{% endif %}
-
-<br/>
-
-{% if isaliasedterms %}
-<span class="label">This term is alaised by</span>
-{% for t in isaliasedterms %}
-<h2><a href=/termhistory/{{t.id}}>{{t.name}}</a></h2>
-{{t.description}} <br>
-<li>List containing this term version: {% for vlv in t.vocab_list_versions %}
-<a href="/vocabversion/{{vlv.id}}">{{vlv}}</a>{% endfor %}</li>
-<li>Proposls with this term version:{% for p in t.proposals %}
-<li>Proposal: <a class="prop-{{p.status}}" href="/proposal/{{p.id}}/edit">{{p}}</a></li></li>
-{% endfor %}
-{% endfor %}
-{% else %}
-<span class="label">This term is not aliased.</span>
-{% endif %}
-
-
-
     
 {% endblock %}
 

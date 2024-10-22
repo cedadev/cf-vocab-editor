@@ -4,10 +4,11 @@
 {% block main %}
 
 
-<form method="post" action="/bulkupload/{{vocab.id}}" enctype="multipart/form-data">{% csrf_token %}
+
 
 <h1>Bulk upload</h1>
-    <p>This form is used to bulk upload terms from a CSV file. It only works for new terms.
+
+<p>This form is used to bulk upload terms from a CSV file. It only works for new terms.
     The CSV file has to have a header with proposal details and a body listing the
     term names, units, unitref (optional) and definitions (optional). A blank line signals the end of the header.
     If the definition is "GETDEF" then the phrase list is used to construct the first guess at the definition.
@@ -31,12 +32,18 @@ test_bulk_my_term7,m3 tt,,GETDEF
 </pre>
 
 <div class="row">
-      <div class="span6">CSV file <input type="file" name="upload"></div>
-      <div class="span6"><input class="btn btn-danger" type="submit" value="Upload proposals"></div>
+
+    <form method="post" action="/bulkupload/{{vocab.id}}" enctype="multipart/form-data">{% csrf_token %}
+      <div class="col">
+        <label for="formFile" class="form-label">CSV file</label> 
+        <input class="form-control m-1" type="file" id="formFile" name="upload">
+        <input class="btn btn-danger m-1" type="submit" value="Upload proposals"></div>
+
+    </form>
 </div>
 
 
-</form>
+
 
 {% endblock %}
 

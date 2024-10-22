@@ -1,8 +1,9 @@
-from django.db import models
 
 import datetime
 import random
 import re
+import requests
+from django.db import models
 from django.utils.safestring import mark_safe
 
 # make a convertion table for smart quotes etc.
@@ -12,23 +13,27 @@ outtab = b'\047\047\042\042\052\055\055\040'
 convert_smart_quotes_table = bytes.maketrans(intab, outtab)
 
 
-
 class Term(models.Model):
-    # the vocab term. 
-    externalid = models.CharField(max_length=256, blank=True, default='', help_text="machine readable id")
+    """the vocab term. """
+    externalid = models.CharField(max_length=256, blank=True, default='',
+                                  help_text="machine readable id")
     name = models.CharField(max_length=1024, blank=True, default='', help_text="term text")
-    description = models.CharField(max_length=4096, blank=True, default='', help_text="description of term")
+    description = models.CharField(max_length=4096, blank=True, default='',
+                                   help_text="description of term")
     unit = models.CharField(max_length=256, blank=True, default='', help_text="unit")
-    unit_ref = models.CharField(max_length=256, blank=True, default='', help_text="reference for unit")
-    amip = models.CharField(max_length=256, blank=True, default='', help_text="amip name/number for term")
-    grib = models.CharField(max_length=256, blank=True, default='', help_text="Grib name/number for term")
+    unit_ref = models.CharField(max_length=256, blank=True, default='',
+                                help_text="reference for unit")
+    amip = models.CharField(max_length=256, blank=True, default='',
+                            help_text="amip name/number for term")
+    grib = models.CharField(max_length=256, blank=True, default='',
+                            help_text="Grib name/number for term")
 
     def __str__(self):
-        return "Term: %s" % (self.name,) 
+        return f"Term: {self.name}"
 
     def save(self, *args, **kwargs):
         # overload save to get ride of smart quotes
-        if type(self.description) == str:
+        if isinstance(self.description, str):
             self.description = self.description.translate(convert_smart_quotes_table)
         models.Model.save(self, *args, **kwargs)
         
@@ -40,25 +45,23 @@ class Term(models.Model):
         return ' '.join(pp)    
     
     # Generate a new id for term
-    def generate_term_id(self):    
+    def generate_term_id(self):
+        """Generate a random 8 character id."""
         chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
-        pid = ''
-        cnt = 0
-        while cnt < 8:
-            pid += random.choice(chars)
-            cnt += 1         
-        return pid
+        picked_chars = random.choices(chars, k=8)
+        return "".join(picked_chars)
 
     def gen_externalid(self):
-        for i in range(100):
+        """Add a random external id makeing sure it does not already exist in the list."""
+        pid = self.generate_term_id()
+        while Term.objects.filter(externalid=pid).exists():
             pid = self.generate_term_id()
-            matchs = Term.objects.filter(externalid=pid)         
-            if len(matchs) == 0:
-                self.externalid = pid
-                self.save()
-                return 
-           
+        self.externalid = pid
+        self.save()
+        return
+
     def proposals(self):
+        """Return a list of proposals that have contain this term."""
         props = Proposal.objects.filter(terms=self)
         return props
 
@@ -73,10 +76,6 @@ class Term(models.Model):
     def vocab_list_versions(self):
         vlvs = VocabListVersion.objects.filter(terms=self)
         return vlvs
-
-    def with_same_name(self):
-        terms = Term.objects.filter(name=self.name)
-        return terms
 
     def aliases(self):
         aliases = Alias.objects.filter(termname=self.name)
@@ -222,15 +221,33 @@ class Proposal(models.Model):
     terms = models.ManyToManyField(Term, blank=True, through='ProposedTerms')
     alias = models.BooleanField(default=False)
 
+    def issue_number(self):
+        pattern = r'https://github.com/cf-convention/vocabularies/issues/(\d+)/?$'
+        m = re.match(pattern, self.mail_list_url)
+        if m:
+            return m.group(1)
+        else:
+            return None
+
+    def short_title(self):
+        issue_num = re.match(r'https://github.com/cf-convention/vocabularies/issues/(\d+)/?$', self.mail_list_url)
+        if self.issue_number():
+            pass
+        #if self.mail_list_title
+
+
+        return f'{self.proposer} '
+
     def __str__(self):
         return "%s [%s]" % (self.proposer, self.mail_list_title[0:40]) 
     
     def current_term(self):
-        if len(self.terms.all())==0: return None
-        else: 
-            pt = ProposedTerms.objects.filter(proposal=self).order_by('-change_date')[0]
+        pt = ProposedTerms.objects.filter(proposal=self).order_by("change_date").last()
+        if pt is None: 
+            return None
+        else:
             return pt.term
-
+        
     def first_term(self):
         if len(self.terms.all())==0: return None
         else: 
@@ -292,12 +309,13 @@ class Proposal(models.Model):
     def updatetype(self):
         current_term = self.current_term()
         first_term = self.first_term()
-        if first_term == None: return "New"
-        term_name_change = (first_term.name != current_term.name)
+        if first_term is None:
+            return "New"
+        term_name_change = first_term.name != current_term.name
 
-        # 3 posibilies: 
+        # 3 posibilies:
         #    1) new - current term not on the list and alias flag on proposal set to false.
-        #    2) updated - its an old term, but the term name has not changed. 
+        #    2) updated - its an old term, but the term name has not changed.
         #    3) term change - its an old term and the term name has changed.
 
         # new record
@@ -308,69 +326,28 @@ class Proposal(models.Model):
         else: return "TermChange"          
 
 
-    def skosupdate(self):
-        # make update skos for NERC vocab server.
-        current_term = self.current_term()
-        first_term = self.first_term()
-        term_name_change = (first_term.name != current_term.name)
-        version = self.vocab_list_version
-
-        # new record
-        if not self.alias: 
-            return """<skos:Concept><skos:externalID>%s</skos:externalID>
-             <skos:prefLabel>%s</skos:prefLabel><skos:altLabel>null</skos:altLabel>
-             <skos:definition>%s</skos:definition><skos:changeNote>I</skos:changeNote>
-             <date xmlns="http://purl.org/dc/elements/1.1/">%s</date>
-             </skos:Concept>""" %(current_term.externalid, current_term.name,
-                                  current_term.description, datetime.date.today().isoformat())
-
-        # old term with no change in term name
-        elif not term_name_change:
-            return """<skos:Concept><skos:externalID>%s</skos:externalID>
-             <skos:prefLabel>%s</skos:prefLabel><skos:altLabel>null</skos:altLabel>
-             <skos:definition>%s</skos:definition><skos:changeNote>M</skos:changeNote>
-             <date xmlns="http://purl.org/dc/elements/1.1/">%s</date>
-             </skos:Concept>""" %(current_term.externalid, current_term.name,
-                                  current_term.description, datetime.date.today().isoformat())
- 
-        # old term with a change in the term name
-        elif self.alias and term_name_change: 
-            return """<skos:Concept><skos:externalID>%s</skos:externalID>
-             <skos:prefLabel>%s</skos:prefLabel><skos:altLabel>null</skos:altLabel>
-             <skos:definition>%s</skos:definition><skos:changeNote>D</skos:changeNote>
-             <date xmlns="http://purl.org/dc/elements/1.1/">%s</date>
-             </skos:Concept>
-             <skos:Concept><skos:externalID>%s</skos:externalID>
-             <skos:prefLabel>%s</skos:prefLabel><skos:altLabel>null</skos:altLabel>
-             <skos:definition>%s</skos:definition><skos:changeNote>I</skos:changeNote>
-             <date xmlns="http://purl.org/dc/elements/1.1/">%s</date>
-             </skos:Concept>""" %(first_term.externalid, first_term.name,
-                                  first_term.description, datetime.date.today().isoformat(),
-                                  current_term.externalid,
-                                  current_term.name, current_term.description, datetime.date.today().isoformat())
+    @staticmethod
+    def tsv_update_string(term, change_note):
+        """String for tab seperated value representation of term change."""
+        return f"{term.externalid}\t{term.name}\t\t{term.description}\t{change_note}\n"
 
     def tsvupdate(self):
-        # make update tsv for NERC vocab server.
+        """make update skos for NERC vocab server."""
         current_term = self.current_term()
         first_term = self.first_term()
-        term_name_change = (first_term.name != current_term.name)
-        version = self.vocab_list_version
+        term_name_change = first_term.name != current_term.name
 
         # new record
         if not self.alias:
-            return "%s\t%s\t\t%s\tI\n" %(current_term.externalid, current_term.name,
-                                         current_term.description)
+            return self.tsv_update_string(current_term, "I")
 
         # old term with no change in term name
-        elif not term_name_change:
-            return "%s\t%s\t\t%s\tM\n" % (current_term.externalid, current_term.name,
-                                          current_term.description)
+        if not term_name_change:
+            return self.tsv_update_string(current_term, "M")
 
         # old term with a change in the term name
-        elif self.alias and term_name_change:
-            return "%s\t%s\t\t%s\tD\n%s\t%s\t\t%s\tI\n" %(first_term.externalid, first_term.name,
-                                                        first_term.description, current_term.externalid,
-                                                        current_term.name, current_term.description)
+        if self.alias and term_name_change: 
+            return self.tsv_update_string(first_term, "D") + self.tsv_update_string(current_term, "I")
 
     def csv_mapping_update(self):
         current_term = self.current_term()
@@ -437,6 +414,45 @@ class Proposal(models.Model):
             # remove proposal - self
         print("remove %s" % self)
         self.delete()            
+
+    def grab_github_issue_info(self):
+        if not self.mail_list_url:
+            return 
+        if self.mail_list_title and self.proposed_date and self.proposer:
+            return
+        
+        issue_number = self.issue_number()
+        if not issue_number:
+            return
+        
+        api_url = f"https://api.github.com/repos/cf-convention/vocabularies/issues/{issue_number}"
+        r = requests.get(url=api_url, timeout=10)
+        issue_json = r.json()
+        print(issue_json)
+        if not self.mail_list_title:
+            self.mail_list_title = issue_json['title']
+        if not self.proposer:
+            user_info = requests.get(url=issue_json['user']['url'], timeout=10)
+            if user_info.json()['name']:
+                self.proposer = user_info.json()['name']
+            else:
+                self.proposer = user_info.json()['login']
+            
+        if not self.proposed_date:
+            self.proposed_date = datetime.datetime.fromisoformat(issue_json['created_at'])
+
+        if not self.comment:
+            labels = [label["name"] for label in issue_json["labels"]]
+            self.comment = "Labels from git hub issue: " + ", ".join(labels)
+
+        print(self, self.proposer)
+        self.save()
+
+    def P06_mapping_suggestions(self):
+        c_term = self.current_term()
+        if c_term is None:
+            return []
+        return Term.objects.filter(unit=c_term.unit).exclude(externalid="").values_list('unit_ref', flat=True).distinct()
 
 
 class ProposedTerms(models.Model):
