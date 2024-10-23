@@ -1,5 +1,5 @@
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
@@ -10,7 +10,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 setup(
     name='cf-vocab-editor',
     version='3.0.0',
-    packages=['vocab'],
+    packages=find_packages(),
     include_package_data=True,
     license='Open License',  # example license
     description='A Django app to track versions of the climate and forcast (CF) standard name table.',
