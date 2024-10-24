@@ -96,19 +96,23 @@ function fill_field(field_id, value)
             <input type="text" class="form-control" id="unit_ref_field" value="{{currentterm.unit_ref}}" name="unitref">
             <label for="unit_ref_field">P06 ref:</label>
       </div></div>   	
-      <div class="col-2">{% for unitref in proposal.P06_mapping_suggestions %}
+      <div class="col-2">
+            {% if currentterm.unit_ref == "" %} 
+            {% for unitref in proposal.P06_mapping_suggestions %}
             {% if unitref != '' and unitref != currentterm.unit_ref %}
             <a href="https://vocab.nerc.ac.uk/collection/P06/current/{{unitref}}/">{{unitref}}</a>
             <span class="btn btn-warning" onclick="fill_field('unit_ref_field', '{{unitref}}')">&larr; {{unitref}}</span>
             {% endif %}
-            {% endfor %}</div>
+            {% endfor %}
+            {% endif %}
+      </div>
  </div>
 
  <div class="row">
       <div class="col-6"><textarea name="description" width="90" rows="8" class="form-control m-1">{{currentterm.description}}</textarea></div>
       <div class="col-6">
             <h4>Suggested phrases</h4>
-            <pre>{{phrases}}</pre>
+            {{phrases}}
             <div><a href="/admin/vocab/phrase/add/" class="btn btn-primary mx-1">Add phrases</a></div>
             
       </div>

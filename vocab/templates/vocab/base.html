@@ -60,18 +60,20 @@ $(function() {
           <li class="nav-item">
             <a class="nav-link" href="/phraselist">Phrase list</a>
           </li>
-          {%if user %}
+          {%if user.is_authenticated %}
           <li class="nav-item"><a class="nav-link" href="/admin/vocab/{{vocab.pk| default:1}}">{{vocab}} Versions</a></li>
           <li class="nav-item"><a class="nav-link" href="/vocabversion/{{vocab.latest_version.pk}}">Latest version: {{vocab.latest_version}}</a></li>
           <li class="nav-item"><a class="nav-link" href="/admin/vocab/phrase">Edit Stock Phrases</a></li>
           {% endif %}
         </ul>
+     
       </div>
     </div>
   </nav>
   {% endblock %}
 
   <div class="container">
+    User:{{user}}
 
   <div class="row">
     <div class="col"> 
