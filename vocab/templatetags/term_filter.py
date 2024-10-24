@@ -74,6 +74,6 @@ def prop_change_type_badge(prop):
     elif updatetype == 'Updated':
         return mark_safe('<span class="badge bg-info">Updated term description</span>')
     else:
-        return mark_safe(f'<span class="badge bg-warning">Term change from {prop.first_term}</span>')
+        return mark_safe(f'<span class="badge bg-warning">Term change from: <span class="font-monospace fw-bold">{prop.first_term().name}</span></span>')
 register.filter("prop_change_type_badge", prop_change_type_badge)
 

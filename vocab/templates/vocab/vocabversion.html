@@ -27,7 +27,7 @@ Version: {{vocabversion.version}}, Created: {{vocabversion.published_date}}
 	 
         <div class="col-12">
             {{t |term_div}} 
-            {%if user and vocabversion.status != "complete" %}
+            {%if user.is_authenticated and vocabversion.status != "complete" %}
             <a class="btn btn-warning m-1" href="/newproposal/{{vocab.pk}}?term={{t.pk}}&alias=1" target="_blank">propose change</a>
             {% endif %}
             <a class="btn btn-primary m-1" href="/termhistory/{{t.pk}}" target="_blank">term history</a>

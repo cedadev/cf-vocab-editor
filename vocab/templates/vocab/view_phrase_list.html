@@ -6,7 +6,7 @@
 
 {% block main %}
 
-{% if user %}
+{% if user.is_authenticated %}
 <a class="btn btn-warning" href="/bulkupload_phrases">Bulk upload phrases</a>
 {% endif %}
 
