@@ -17,7 +17,7 @@ def term_div(term):
     if term is None:
         return "No term"
     if term.externalid:
-        external_id = f' <span class="badge bg-secondary">{term.externalid}</span>'
+        external_id = f' <span class="badge bg-secondary">P07 id: {term.externalid}</span>'
     else:
         external_id = ""
 

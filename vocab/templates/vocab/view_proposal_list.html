@@ -137,6 +137,7 @@
   <a class="btn btn-danger btn-sm" href="/proposal/{{p.id}}/edit">Edit</a>
 {%endif%}
   <a class="btn btn-warning btn-sm" href="/proposal/{{p.id}}">View</a>
+  <span class="badge badge-secondary m-1">{{p.status}}</span>
 </div>
 
   {{p.current_term| term_div}} 
@@ -144,8 +145,10 @@
   <div>  {{p| prop_change_type_badge}} </div>
   
   <div class="col-12 p-2">
+    {% if p.issue_number %}<span class="font-monospace fw-bolder">#{{p.issue_number}}</span>{% endif %}
      {{p.proposer|default:""}} {{p.proposed_date|date:'(Y-m-d)'}}
      <a href="{{p.mail_list_url}}">{{p.mail_list_title}}</a>
+     Comments: {{p.comment}}
   </div>
 </div>
 {%endfor%}

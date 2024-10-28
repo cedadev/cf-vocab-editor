@@ -62,7 +62,9 @@ $(function() {
           </li>
           {%if user.is_authenticated %}
           <li class="nav-item"><a class="nav-link" href="/admin/vocab/{{vocab.pk| default:1}}">{{vocab}} Versions</a></li>
+          {% if vocab  %}
           <li class="nav-item"><a class="nav-link" href="/vocabversion/{{vocab.latest_version.pk}}">Latest version: {{vocab.latest_version}}</a></li>
+          {% endif %}
           <li class="nav-item"><a class="nav-link" href="/admin/vocab/phrase">Edit Stock Phrases</a></li>
           {% endif %}
         </ul>
