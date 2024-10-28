@@ -64,7 +64,7 @@ def viewproposal_list(request, id):
     if yearfilter:
         proposals = proposals.filter(proposed_date__year=int(yearfilter))
 
-    proposals = proposals.order_by('mail_list_url', 'mail_list_title', '-created')
+    proposals = proposals.order_by('-created', '-mail_list_url', 'mail_list_title')
 
 
     # filter by description
