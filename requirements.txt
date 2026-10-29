@@ -9,5 +9,5 @@ certifi
 charset-normalizer
 idna
 urllib3 
-setuptools
+setuptools==81.0.0
 
